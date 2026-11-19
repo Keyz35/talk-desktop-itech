@@ -835,3 +835,7 @@ body[data-theme-dark] .tel3cx-tableau .tel3cx-onglets button[aria-selected="true
 }
 .tel3cx-reunion button.tel3cx-reunion-fermer:hover { background: var(--color-background-hover, #f0ede4); }
 .tel3cx-reunion-message { min-height: 1.2em; margin-top: 10px; font-size: .88em; color: #3f7a36; }
+
+/* Étapes de la fenêtre réunion */
+.tel3cx-reunion-carte[hidden] { display: none; }
+.tel3cx-reunion label.tel3cx-reunion-texte { display: block; margin: 6px 0 8px; }

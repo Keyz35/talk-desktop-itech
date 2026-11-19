@@ -1067,7 +1067,17 @@
 		fenetreReunion.setAttribute('aria-label', 'Votre réunion est prête')
 		fenetreReunion.hidden = true
 		fenetreReunion.innerHTML = `
-			<div class="tel3cx-reunion-carte">
+			<form class="tel3cx-reunion-carte tel3cx-reunion-nom">
+				<button type="button" class="tel3cx-reunion-fermer" aria-label="Annuler" title="Annuler">✕</button>
+				<div class="tel3cx-reunion-titre">Nouvelle réunion</div>
+				<label class="tel3cx-reunion-texte" for="tel3cx-reunion-nom">Nom affiché pour vous et vos invités</label>
+				<input type="text" id="tel3cx-reunion-nom" class="tel3cx-reunion-lien" maxlength="80" value="Réunion" autocomplete="off">
+				<div class="tel3cx-reunion-actions">
+					<button type="submit" class="tel3cx-reunion-copier">Démarrer</button>
+					<button type="button" class="tel3cx-reunion-annuler">Annuler</button>
+				</div>
+			</form>
+			<div class="tel3cx-reunion-carte tel3cx-reunion-prete" hidden>
 				<button type="button" class="tel3cx-reunion-fermer" aria-label="Fermer" title="Fermer">✕</button>
 				<div class="tel3cx-reunion-titre">Votre réunion est prête</div>
 				<p class="tel3cx-reunion-texte">Elle s'ouvre dans votre navigateur. Envoyez ce lien à vos invités :
@@ -1080,15 +1090,25 @@
 				</div>
 				<div class="tel3cx-reunion-message" aria-live="polite"></div>
 			</div>`
-		const lienInvites = fenetreReunion.querySelector('.tel3cx-reunion-lien')
+		const formulaireNom = fenetreReunion.querySelector('.tel3cx-reunion-nom')
+		const carteprete = fenetreReunion.querySelector('.tel3cx-reunion-prete')
+		const champNom = fenetreReunion.querySelector('#tel3cx-reunion-nom')
+		const lienInvites = carteprete.querySelector('.tel3cx-reunion-lien')
+		let nomReunion = 'Réunion'
 		const messageReunion = fenetreReunion.querySelector('.tel3cx-reunion-message')
 		let lienOrganisateur = ''
 		let reunionEnCours = false
 
 		const fermerReunion = () => { fenetreReunion.hidden = true }
-		fenetreReunion.querySelector('.tel3cx-reunion-fermer').addEventListener('click', fermerReunion)
+		fenetreReunion.querySelectorAll('.tel3cx-reunion-fermer, .tel3cx-reunion-annuler').forEach((b) => b.addEventListener('click', fermerReunion))
+		fenetreReunion.addEventListener('keydown', (e) => { if (e.key === 'Escape') fermerReunion() })
+		formulaireNom.addEventListener('submit', (e) => {
+			e.preventDefault()
+			nomReunion = champNom.value.trim() || 'Réunion'
+			demarrerReunion()
+		})
 		fenetreReunion.addEventListener('mousedown', (e) => { if (e.target === fenetreReunion) fermerReunion() })
-		fenetreReunion.querySelector('.tel3cx-reunion-copier').addEventListener('click', async () => {
+		carteprete.querySelector('.tel3cx-reunion-copier').addEventListener('click', async () => {
 			try {
 				await navigator.clipboard.writeText(lienInvites.value)
 			} catch (e) {
@@ -1098,8 +1118,8 @@
 			messageReunion.textContent = 'Lien copié : collez-le dans votre message ou votre invitation.'
 		})
 		fenetreReunion.querySelector('.tel3cx-reunion-courriel').addEventListener('click', () => {
-			const sujet = 'Invitation à une réunion vidéo'
-			const corps = `Bonjour,\n\nJe vous invite à rejoindre ma réunion vidéo :\n${lienInvites.value}\n\nAucun compte n'est nécessaire ; vous patienterez quelques instants en salle d'attente.\n\nBien cordialement`
+			const sujet = nomReunion === 'Réunion' ? 'Invitation à une réunion vidéo' : `Invitation : ${nomReunion}`
+			const corps = `Bonjour,\n\nJe vous invite à rejoindre ma réunion vidéo « ${nomReunion} » :\n${lienInvites.value}\n\nAucun compte n'est nécessaire ; vous patienterez quelques instants en salle d'attente.\n\nBien cordialement`
 			window.open(`mailto:?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`)
 		})
 		fenetreReunion.querySelector('.tel3cx-reunion-rejoindre').addEventListener('click', () => {
@@ -1119,7 +1139,8 @@
 					window.alert(r.message || 'La réunion n\'a pas pu être créée. Réessayez dans un instant.')
 					return
 				}
-				lienOrganisateur = r.lien_organisateur
+				// Titre affiché par Jitsi à la place du nom technique (aléatoire) de la salle.
+				lienOrganisateur = r.lien_organisateur.split('#')[0] + '#config.subject=' + encodeURIComponent(JSON.stringify(nomReunion))
 				if (onglet) {
 					onglet.opener = null
 					onglet.location.href = lienOrganisateur
@@ -1128,6 +1149,8 @@
 				}
 				lienInvites.value = r.lien_invites || ''
 				messageReunion.textContent = ''
+				formulaireNom.hidden = true
+				carteprete.hidden = false
 				fenetreReunion.hidden = false
 				lienInvites.focus()
 				lienInvites.select()
@@ -1146,7 +1169,12 @@
 				if (texte !== 'Commencer une réunion maintenant' && texte !== 'Start meeting now') return
 				e.preventDefault()
 				e.stopImmediatePropagation()
-				demarrerReunion()
+				champNom.value = 'Réunion'
+				carteprete.hidden = true
+				formulaireNom.hidden = false
+				fenetreReunion.hidden = false
+				champNom.focus()
+				champNom.select()
 			}, true)
 		}
 

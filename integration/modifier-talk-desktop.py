@@ -98,3 +98,18 @@ if nouveau not in texte:
         sys.exit("ÉCHEC : getTitleBarSymbolColor introuvable ou ambigu dans src/app/utils.ts")
     utils.write_text(texte.replace(ancien, nouveau), encoding="utf-8")
     print("utils.ts : boutons système foncés pour l'en-tête sable")
+
+# 7. Menu de l'icône de la zone de notification : libellés en français (écrits en dur en anglais)
+tray = racine / "src/app/app.tray.js"
+texte = tray.read_text(encoding="utf-8")
+for ancien, nouveau in (
+    ("\t\t\tlabel: 'Open',\n", "\t\t\tlabel: 'Ouvrir', // ajout iTech : français\n"),
+    ("\t\t\trole: 'quit',\n", "\t\t\trole: 'quit',\n\t\t\tlabel: 'Quitter', // ajout iTech : français\n"),
+):
+    if "ajout iTech : français" in nouveau and nouveau.strip().split("\n")[-1].strip() in texte:
+        continue
+    if texte.count(ancien) != 1:
+        sys.exit(f"ÉCHEC : repère introuvable ou ambigu dans app.tray.js :\n{ancien}")
+    texte = texte.replace(ancien, nouveau)
+tray.write_text(texte, encoding="utf-8")
+print("app.tray.js : menu de la zone de notification en français")
