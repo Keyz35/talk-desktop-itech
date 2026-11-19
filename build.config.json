@@ -7,7 +7,7 @@
 	"macosDmg": false,
 	"linuxFlatpak": false,
 	"linuxZip": false,
-	"brandColor": "#067573",
-	"brandGradient": "linear-gradient(40deg, #067573 0%, #08aba8 100%)",
+	"brandColor": "#6b6862",
+	"brandGradient": "linear-gradient(40deg, #585651 0%, #8a877f 100%)",
 	"brandFontColor": "#FFFFFF"
 }

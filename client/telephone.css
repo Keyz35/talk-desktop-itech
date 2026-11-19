@@ -593,6 +593,8 @@
 	--tel3cx-jaune: #fbd469;
 	--tel3cx-vert: #96c68d;
 	--tel3cx-turquoise: #08aba8;
+	--tel3cx-accent: #6b6862;        /* gris chaud = couleur principale Nextcloud (choix de Jordan) */
+	--tel3cx-dispo: #7fb874;         /* vert du pôle social, un peu soutenu pour les petites pastilles */
 	--tel3cx-fond: #fbfaf8;
 	--tel3cx-fond-2: #f0ede4;
 	--tel3cx-texte: #111110;
@@ -611,6 +613,7 @@ body[data-theme-dark-highcontrast] .tel3cx-panneau, body[data-theme-dark-highcon
 	--tel3cx-texte-2: var(--color-text-maxcontrast);
 	--tel3cx-trait: var(--color-border);
 	--tel3cx-trait-fort: var(--color-border-dark);
+	--tel3cx-accent: #908d87;
 }
 @media (prefers-color-scheme: dark) {
 	body:not([data-theme-light]):not([data-theme-light-highcontrast]) .tel3cx-panneau,
@@ -621,6 +624,7 @@ body[data-theme-dark-highcontrast] .tel3cx-panneau, body[data-theme-dark-highcon
 		--tel3cx-texte-2: var(--color-text-maxcontrast);
 		--tel3cx-trait: var(--color-border);
 		--tel3cx-trait-fort: var(--color-border-dark);
+		--tel3cx-accent: #908d87;
 	}
 }
 
@@ -628,7 +632,7 @@ body[data-theme-dark-highcontrast] .tel3cx-panneau, body[data-theme-dark-highcon
 .tel3cx-panneau { background: var(--tel3cx-fond); border: 1px solid var(--tel3cx-trait); border-radius: 18px; box-shadow: 0 12px 32px rgba(2, 18, 22, .16); }
 .tel3cx-titre { font-weight: 600; font-size: 1.2em; letter-spacing: .01em; }
 .tel3cx-poste { color: var(--tel3cx-texte-2); }
-.tel3cx-connecte::before { background: var(--tel3cx-turquoise); }
+.tel3cx-connecte::before { background: var(--tel3cx-dispo); }
 .tel3cx-attention::before { background: var(--tel3cx-jaune); }
 
 .tel3cx-panneau .tel3cx-saisie input {
@@ -641,7 +645,7 @@ body[data-theme-dark-highcontrast] .tel3cx-panneau, body[data-theme-dark-highcon
 	font-size: 1.3em;
 	letter-spacing: .06em;
 }
-.tel3cx-panneau .tel3cx-saisie input:focus { border-color: var(--tel3cx-turquoise); box-shadow: 0 0 0 3px rgba(8, 171, 168, .18); }
+.tel3cx-panneau .tel3cx-saisie input:focus { border-color: var(--tel3cx-accent); box-shadow: 0 0 0 3px rgba(107, 104, 98, .18); }
 .tel3cx-panneau button.tel3cx-effacer { border-radius: 50%; background: transparent; color: var(--tel3cx-texte-2); }
 .tel3cx-panneau button.tel3cx-effacer:hover { background: var(--tel3cx-fond-2); color: var(--tel3cx-corail); }
 
@@ -674,13 +678,13 @@ body[data-theme-dark-highcontrast] .tel3cx-panneau, body[data-theme-dark-highcon
 	transition: filter .15s, transform .1s;
 }
 .tel3cx-panneau button.tel3cx-appeler,
-.tel3cx-panneau button.tel3cx-appeler:disabled { background: var(--tel3cx-turquoise); color: #fff; }
+.tel3cx-panneau button.tel3cx-appeler:disabled { background: var(--tel3cx-accent); color: #fff; }
 .tel3cx-panneau button.tel3cx-appeler:hover:not(:disabled) { filter: brightness(.92); }
 .tel3cx-panneau button.tel3cx-appeler:active:not(:disabled), .tel3cx-panneau button.tel3cx-raccrocher:active { transform: scale(.98); }
 .tel3cx-panneau button.tel3cx-raccrocher { background: var(--tel3cx-corail); color: #fff; }
-.tel3cx-panneau button.tel3cx-repondre { background: var(--tel3cx-turquoise); }
+.tel3cx-panneau button.tel3cx-repondre { background: var(--tel3cx-accent); }
 .tel3cx-panneau button.tel3cx-refuser { background: var(--tel3cx-corail); }
-@keyframes tel3cx-pulse { 50% { box-shadow: 0 0 0 10px rgba(8, 171, 168, .22); } }
+@keyframes tel3cx-pulse { 50% { box-shadow: 0 0 0 10px rgba(107, 104, 98, .22); } }
 
 /* Appel en cours */
 .tel3cx-appel { background: var(--tel3cx-fond-2); border-radius: 18px; }
@@ -690,7 +694,7 @@ body[data-theme-dark-highcontrast] .tel3cx-panneau, body[data-theme-dark-highcon
 
 /* Messages */
 .tel3cx-message { border-radius: 12px; }
-.tel3cx-succes { background: rgba(8, 171, 168, .12); color: var(--tel3cx-texte); border-left: 3px solid var(--tel3cx-turquoise); }
+.tel3cx-succes { background: rgba(107, 104, 98, .12); color: var(--tel3cx-texte); border-left: 3px solid var(--tel3cx-accent); }
 .tel3cx-erreur { background: rgba(217, 107, 90, .12); color: var(--tel3cx-texte); border-left: 3px solid var(--tel3cx-corail); }
 .tel3cx-info { background: var(--tel3cx-fond-2); }
 
@@ -699,7 +703,7 @@ body[data-theme-dark-highcontrast] .tel3cx-panneau, body[data-theme-dark-highcon
 .tel3cx-tableau .tel3cx-col + .tel3cx-col { border-color: var(--tel3cx-trait); }
 .tel3cx-tableau .tel3cx-col-centre { background: var(--tel3cx-fond-2); }
 .tel3cx-tableau h2 { font-family: inherit; font-weight: 600; font-size: 1.45em; letter-spacing: .01em; }
-.tel3cx-tableau h2::after { content: ''; display: block; width: 32px; height: 3px; margin-top: 6px; border-radius: 2px; background: var(--tel3cx-turquoise); }
+.tel3cx-tableau h2::after { content: ''; display: block; width: 32px; height: 3px; margin-top: 6px; border-radius: 2px; background: var(--tel3cx-accent); }
 .tel3cx-tableau .tel3cx-col-recents h2::after { background: var(--tel3cx-corail); }
 .tel3cx-tableau input.tel3cx-filtre-contacts {
 	height: 42px;
@@ -710,19 +714,19 @@ body[data-theme-dark-highcontrast] .tel3cx-panneau, body[data-theme-dark-highcon
 	color: var(--tel3cx-texte);
 	font-family: inherit;
 }
-.tel3cx-tableau input.tel3cx-filtre-contacts:focus { border-color: var(--tel3cx-turquoise); box-shadow: 0 0 0 3px rgba(8, 171, 168, .18); }
+.tel3cx-tableau input.tel3cx-filtre-contacts:focus { border-color: var(--tel3cx-accent); box-shadow: 0 0 0 3px rgba(107, 104, 98, .18); }
 .tel3cx-section { background: var(--tel3cx-fond); color: var(--tel3cx-texte-2); letter-spacing: .1em; }
-.tel3cx-section::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--tel3cx-turquoise); vertical-align: middle; }
+.tel3cx-section::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--tel3cx-accent); vertical-align: middle; }
 .tel3cx-section ~ .tel3cx-section::before { background: var(--tel3cx-corail); }
 .tel3cx-contact:hover, .tel3cx-recent:hover, .tel3cx-contact:focus-visible, .tel3cx-recent:focus-visible { background: var(--tel3cx-fond-2); }
 .tel3cx-contact-texte .tel3cx-num { color: var(--tel3cx-texte-2); }
-.tel3cx-dispo { background: var(--tel3cx-turquoise); }
+.tel3cx-dispo { background: var(--tel3cx-dispo); }
 .tel3cx-absent { background: var(--tel3cx-trait-fort); }
 .tel3cx-presence { box-shadow: 0 0 0 2px var(--tel3cx-fond); }
-.tel3cx-tableau button.tel3cx-appel-rapide { color: var(--tel3cx-turquoise); }
-.tel3cx-tableau button.tel3cx-appel-rapide:hover { background: rgba(8, 171, 168, .14); }
+.tel3cx-tableau button.tel3cx-appel-rapide { color: var(--tel3cx-accent); }
+.tel3cx-tableau button.tel3cx-appel-rapide:hover { background: rgba(107, 104, 98, .14); }
 .tel3cx-tableau button.tel3cx-puce { border-color: var(--tel3cx-trait); border-radius: 100px; background: var(--tel3cx-fond); color: var(--tel3cx-texte); font-family: inherit; }
-.tel3cx-tableau button.tel3cx-puce:hover { border-color: var(--tel3cx-turquoise); background: rgba(8, 171, 168, .1); }
+.tel3cx-tableau button.tel3cx-puce:hover { border-color: var(--tel3cx-accent); background: rgba(107, 104, 98, .1); }
 .tel3cx-puce-type { color: var(--tel3cx-texte-2); }
 
 /* Onglets Tous / Manqués : pilules en contour, comme les boutons du site */
@@ -739,7 +743,7 @@ body[data-theme-dark-highcontrast] .tel3cx-panneau, body[data-theme-dark-highcon
 }
 .tel3cx-tableau .tel3cx-onglets button:hover { border-color: var(--tel3cx-encre); }
 .tel3cx-tableau .tel3cx-onglets button[aria-selected="true"] { border-color: var(--tel3cx-encre); background: var(--tel3cx-encre); color: #fbfaf8; }
-body[data-theme-dark] .tel3cx-tableau .tel3cx-onglets button[aria-selected="true"] { border-color: var(--tel3cx-turquoise); background: var(--tel3cx-turquoise); }
+body[data-theme-dark] .tel3cx-tableau .tel3cx-onglets button[aria-selected="true"] { border-color: #908d87; background: #908d87; color: #111110; }
 
 .tel3cx-recents button.tel3cx-manque .tel3cx-nom,
 .tel3cx-recent.tel3cx-manque .tel3cx-nom,
@@ -753,7 +757,7 @@ body[data-theme-dark] .tel3cx-tableau .tel3cx-onglets button[aria-selected="true
 .tel3cx-entete button.tel3cx-bouton-entete[aria-pressed="true"] {
 	background: color-mix(in srgb, var(--color-background-plain-text, #fff) 12%, transparent);
 }
-.tel3cx-entete button.tel3cx-bouton-entete.tel3cx-en-ligne { background: rgba(8, 171, 168, .35); }
+.tel3cx-entete button.tel3cx-bouton-entete.tel3cx-en-ligne { background: rgba(127, 184, 116, .45); }
 .tel3cx-entete .tel3cx-pastille { box-shadow: 0 0 0 2px var(--color-background-plain, #00679e); }
-.tel3cx-pastille.tel3cx-pret { background: #08aba8; }
+.tel3cx-pastille.tel3cx-pret { background: #7fb874; }
 .tel3cx-pastille.tel3cx-hors { background: #e0a91c; }
