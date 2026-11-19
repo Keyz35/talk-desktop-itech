@@ -1,0 +1,10 @@
+{
+	"applicationName": "Nextcloud Talk 3CX",
+	"domain": "https://cloud.itech.ovh",
+	"enforceDomain": false,
+	"windowsExe": true,
+	"windowsMsi": false,
+	"macosDmg": false,
+	"linuxFlatpak": false,
+	"linuxZip": false
+}

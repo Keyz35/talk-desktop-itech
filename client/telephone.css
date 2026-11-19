@@ -1,0 +1,326 @@
+/* Téléphone 3CX — reprend les couleurs du thème Nextcloud (clair et sombre). */
+
+.tel3cx-entete {
+	display: flex;
+	align-items: center;
+}
+
+.tel3cx-bouton-entete {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--header-height, 50px);
+	height: var(--header-height, 50px);
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: var(--border-radius-element, 50%);
+	background: transparent;
+	color: var(--color-background-plain-text, #fff);
+	opacity: .85;
+	cursor: pointer;
+}
+
+.tel3cx-bouton-entete:hover,
+.tel3cx-bouton-entete:focus-visible,
+.tel3cx-bouton-entete[aria-expanded="true"] {
+	opacity: 1;
+	background: rgba(255, 255, 255, .15);
+}
+
+.tel3cx-flottant {
+	position: fixed;
+	right: 16px;
+	bottom: 16px;
+	z-index: 2000;
+}
+
+.tel3cx-flottant .tel3cx-bouton-entete {
+	background: var(--color-primary-element);
+	color: var(--color-primary-element-text);
+	border-radius: 50%;
+	box-shadow: 0 2px 8px var(--color-box-shadow);
+}
+
+.tel3cx-panneau {
+	position: fixed;
+	top: calc(var(--header-height, 50px) + 4px);
+	right: 12px;
+	z-index: 2000;
+	box-sizing: border-box;
+	width: 300px;
+	max-width: calc(100vw - 24px);
+	max-height: calc(100vh - var(--header-height, 50px) - 16px);
+	overflow-y: auto;
+	padding: 14px;
+	border-radius: var(--border-radius-large, 12px);
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	box-shadow: 0 0 10px var(--color-box-shadow);
+	font-size: var(--default-font-size, 15px);
+}
+
+.tel3cx-panneau[hidden] { display: none; }
+
+.tel3cx-tete {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	margin-bottom: 10px;
+}
+
+.tel3cx-titre { font-weight: bold; font-size: 1.1em; }
+
+.tel3cx-poste { font-size: .85em; color: var(--color-text-maxcontrast); }
+.tel3cx-poste::before {
+	content: '';
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	margin-right: 6px;
+	border-radius: 50%;
+	vertical-align: middle;
+	background: var(--color-text-maxcontrast);
+}
+.tel3cx-poste:empty::before { display: none; }
+.tel3cx-connecte::before { background: #2fb130; }
+.tel3cx-attention::before { background: #e9a000; }
+
+.tel3cx-saisie {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	margin-bottom: 8px;
+}
+
+.tel3cx-saisie input {
+	flex: 1;
+	min-width: 0;
+	height: 44px;
+	margin: 0;
+	font-size: 1.25em;
+	text-align: center;
+	letter-spacing: .03em;
+}
+
+.tel3cx-effacer {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	min-width: 44px;
+	margin: 0;
+	padding: 0;
+	border: none;
+	background: transparent;
+	color: var(--color-text-maxcontrast);
+	cursor: pointer;
+}
+
+.tel3cx-effacer:hover { color: var(--color-main-text); }
+
+.tel3cx-clavier {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 8px;
+	margin-bottom: 10px;
+}
+
+.tel3cx-clavier button {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 52px;
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: var(--border-radius-large, 12px);
+	background: var(--color-background-dark);
+	color: var(--color-main-text);
+	cursor: pointer;
+	user-select: none;
+	touch-action: manipulation;
+}
+
+.tel3cx-clavier button:hover { background: var(--color-background-darker); }
+.tel3cx-clavier button:active { transform: scale(.96); }
+
+.tel3cx-chiffre { font-size: 1.4em; line-height: 1.1; }
+.tel3cx-lettres { font-size: .62em; letter-spacing: .12em; color: var(--color-text-maxcontrast); }
+
+.tel3cx-panneau button.tel3cx-appeler {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+	height: 46px;
+	margin: 0;
+	border: none;
+	border-radius: var(--border-radius-pill, 23px);
+	background: #2d7b41;
+	color: #fff;
+	min-height: 46px;
+	box-sizing: border-box;
+	font-weight: bold;
+	cursor: pointer;
+}
+
+.tel3cx-panneau button.tel3cx-appeler:hover:not(:disabled) { filter: brightness(1.1); }
+.tel3cx-panneau button.tel3cx-appeler:disabled { background: #2d7b41; color: #fff; opacity: .4; cursor: default; }
+.tel3cx-panneau button.tel3cx-appeler svg { flex-shrink: 0; }
+
+.tel3cx-message {
+	margin-top: 10px;
+	padding: 8px 10px;
+	border-radius: var(--border-radius, 6px);
+	font-size: .9em;
+	line-height: 1.35;
+}
+.tel3cx-message[hidden] { display: none; }
+.tel3cx-info { background: var(--color-background-dark); }
+.tel3cx-succes { background: var(--color-success-hover, rgba(45, 123, 65, .15)); color: var(--color-success-text, var(--color-main-text)); }
+.tel3cx-erreur { background: var(--color-error-hover, rgba(219, 7, 7, .1)); color: var(--color-error-text, var(--color-main-text)); }
+
+.tel3cx-suggestions,
+.tel3cx-recents {
+	margin: 0 0 10px;
+	padding: 0;
+	list-style: none;
+}
+.tel3cx-suggestions[hidden] { display: none; }
+
+.tel3cx-suggestions button,
+.tel3cx-recents button {
+	display: flex;
+	justify-content: space-between;
+	gap: 8px;
+	width: 100%;
+	margin: 0;
+	padding: 7px 8px;
+	border: none;
+	border-radius: var(--border-radius, 6px);
+	background: transparent;
+	color: var(--color-main-text);
+	text-align: left;
+	cursor: pointer;
+}
+
+.tel3cx-suggestions button:hover,
+.tel3cx-recents button:hover { background: var(--color-background-hover); }
+
+.tel3cx-nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tel3cx-num { flex-shrink: 0; color: var(--color-text-maxcontrast); font-size: .9em; }
+.tel3cx-vide { padding: 7px 8px; color: var(--color-text-maxcontrast); font-size: .9em; }
+
+.tel3cx-recents-bloc { margin-top: 12px; }
+.tel3cx-recents-bloc[hidden] { display: none; }
+.tel3cx-sous-titre {
+	margin-bottom: 4px;
+	font-size: .8em;
+	font-weight: bold;
+	text-transform: uppercase;
+	color: var(--color-text-maxcontrast);
+}
+
+/* ------------------------------------------------------------------ téléphone intégré (SIP) */
+
+.tel3cx-bouton-entete { position: relative; }
+
+.tel3cx-pastille {
+	position: absolute;
+	right: 10px;
+	bottom: 10px;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	display: none;
+	box-shadow: 0 0 0 2px var(--color-primary, #00679e);
+}
+.tel3cx-pastille.tel3cx-pret { display: block; background: #2fb130; }
+.tel3cx-pastille.tel3cx-hors { display: block; background: #e9a000; }
+
+.tel3cx-bouton-entete.tel3cx-en-ligne { background: rgba(47, 177, 48, .35); opacity: 1; }
+.tel3cx-bouton-entete.tel3cx-sonne { animation: tel3cx-sonne 1s ease-in-out infinite; opacity: 1; }
+@keyframes tel3cx-sonne {
+	0%, 100% { background: rgba(47, 177, 48, .25); transform: rotate(0); }
+	25% { transform: rotate(-12deg); }
+	50% { background: rgba(47, 177, 48, .6); transform: rotate(12deg); }
+	75% { transform: rotate(-6deg); }
+}
+
+.tel3cx-appel {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 12px;
+	padding: 14px 10px;
+	border-radius: var(--border-radius-large, 12px);
+	background: var(--color-background-dark);
+	text-align: center;
+}
+.tel3cx-appel[hidden] { display: none; }
+.tel3cx-appel-etat { font-size: .85em; color: var(--color-text-maxcontrast); }
+.tel3cx-appel-qui { font-size: 1.2em; font-weight: bold; word-break: break-word; }
+.tel3cx-appel-duree { font-variant-numeric: tabular-nums; color: var(--color-text-maxcontrast); min-height: 1.2em; }
+
+.tel3cx-appel-entrant { display: flex; gap: 40px; margin-top: 8px; }
+.tel3cx-appel-entrant[hidden], .tel3cx-appel-actions[hidden] { display: none; }
+
+.tel3cx-panneau button.tel3cx-rond {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 56px;
+	height: 56px;
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	color: #fff;
+	cursor: pointer;
+}
+.tel3cx-panneau button.tel3cx-repondre { background: #2d7b41; animation: tel3cx-pulse 1.2s ease-in-out infinite; }
+.tel3cx-panneau button.tel3cx-refuser { background: #c9302c; }
+@keyframes tel3cx-pulse { 50% { box-shadow: 0 0 0 8px rgba(45, 123, 65, .25); } }
+
+.tel3cx-appel-actions { display: flex; gap: 8px; margin-top: 6px; }
+.tel3cx-panneau button.tel3cx-action {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 2px;
+	min-width: 72px;
+	margin: 0;
+	padding: 6px 8px;
+	border: none;
+	border-radius: var(--border-radius-large, 12px);
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	font-size: .78em;
+	cursor: pointer;
+}
+.tel3cx-panneau button.tel3cx-action.tel3cx-actif { background: var(--color-primary-element); color: var(--color-primary-element-text); }
+
+.tel3cx-panneau button.tel3cx-raccrocher {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	width: 100%;
+	height: 46px;
+	margin: 0;
+	border: none;
+	border-radius: var(--border-radius-pill, 23px);
+	background: #c9302c;
+	color: #fff;
+	font-weight: bold;
+	cursor: pointer;
+}
+.tel3cx-panneau button.tel3cx-raccrocher[hidden], .tel3cx-panneau button.tel3cx-appeler[hidden],
+.tel3cx-clavier[hidden], .tel3cx-saisie[hidden] { display: none; }
+
+.tel3cx-recents button.tel3cx-manque .tel3cx-nom { color: var(--color-error, #c9302c); }
