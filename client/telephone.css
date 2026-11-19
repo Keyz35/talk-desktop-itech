@@ -518,3 +518,35 @@
 	.tel3cx-col-centre { order: -1; }
 	.tel3cx-contacts, .tel3cx-historique { max-height: 50vh; }
 }
+
+/* Sections de la colonne Contacts et numéros des contacts personnels */
+.tel3cx-section {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	margin-top: 8px;
+	padding: 6px 8px;
+	background: var(--color-main-background);
+	font-size: .78em;
+	font-weight: bold;
+	text-transform: uppercase;
+	color: var(--color-text-maxcontrast);
+}
+.tel3cx-section:first-child { margin-top: 0; }
+.tel3cx-contact-perso { align-items: flex-start; }
+.tel3cx-avatar-perso { border-radius: 30%; }
+.tel3cx-puces { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.tel3cx-tableau button.tel3cx-puce {
+	min-height: 0;
+	margin: 0;
+	padding: 2px 8px;
+	border: 1px solid var(--color-border-dark, #dbdbdb);
+	border-radius: var(--border-radius-pill, 12px);
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	font-size: .8em;
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+}
+.tel3cx-tableau button.tel3cx-puce:hover { border-color: #2d7b41; background: rgba(45, 123, 65, .1); }
+.tel3cx-puce-type { color: var(--color-text-maxcontrast); }

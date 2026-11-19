@@ -665,6 +665,7 @@
 
 		etat.tableau = false
 		etat.contacts = null          // null = pas encore chargés
+		etat.mesContacts = null
 		etat.annuaireDisponible = true
 		etat.filtreRecents = 'tous'
 
@@ -676,7 +677,7 @@
 		tableau.innerHTML = `
 			<section class="tel3cx-col tel3cx-col-contacts">
 				<h2>Contacts</h2>
-				<input type="search" class="tel3cx-filtre-contacts" placeholder="Rechercher un collègue ou un poste" aria-label="Rechercher un contact">
+				<input type="search" class="tel3cx-filtre-contacts" placeholder="Nom, société ou numéro" aria-label="Rechercher un contact">
 				<ul class="tel3cx-contacts"></ul>
 			</section>
 			<section class="tel3cx-col tel3cx-col-centre"></section>
@@ -727,62 +728,138 @@
 			return b
 		}
 
+		function ligneVide(texte) {
+			const li = document.createElement('li')
+			li.className = 'tel3cx-vide'
+			li.textContent = texte
+			return li
+		}
+
+		function titreSection(texte, nombre) {
+			const li = document.createElement('li')
+			li.className = 'tel3cx-section'
+			li.textContent = nombre === undefined ? texte : `${texte} (${nombre})`
+			return li
+		}
+
+		function ligneCollegue(c) {
+			const li = document.createElement('li')
+			li.className = 'tel3cx-contact'
+			li.tabIndex = 0
+			const avatar = document.createElement('span')
+			avatar.className = 'tel3cx-avatar'
+			avatar.style.background = couleur(c.nom)
+			avatar.textContent = initiales(c.nom)
+			const presence = document.createElement('span')
+			presence.className = 'tel3cx-presence ' + (c.enregistre ? 'tel3cx-dispo' : 'tel3cx-absent')
+			presence.title = c.enregistre ? 'Connecté' : 'Non connecté'
+			avatar.append(presence)
+			const texte = document.createElement('span')
+			texte.className = 'tel3cx-contact-texte'
+			texte.innerHTML = '<span class="tel3cx-nom"></span><span class="tel3cx-num"></span>'
+			texte.querySelector('.tel3cx-nom').textContent = c.nom
+			texte.querySelector('.tel3cx-num').textContent = 'Poste ' + c.poste
+			const libelle = `${c.nom} (poste ${c.poste})`
+			li.append(avatar, texte, boutonAppelPetit(c.poste, libelle))
+			li.addEventListener('click', () => remplir(c.poste, libelle))
+			li.addEventListener('keydown', (e) => { if (e.key === 'Enter') appelerDirect(c.poste, libelle) })
+			return li
+		}
+
+		function ligneContact(c) {
+			const li = document.createElement('li')
+			li.className = 'tel3cx-contact tel3cx-contact-perso'
+			li.tabIndex = 0
+			const avatar = document.createElement('span')
+			avatar.className = 'tel3cx-avatar tel3cx-avatar-perso'
+			avatar.style.background = couleur(c.nom)
+			avatar.textContent = initiales(c.nom)
+			const texte = document.createElement('span')
+			texte.className = 'tel3cx-contact-texte'
+			const nom = document.createElement('span')
+			nom.className = 'tel3cx-nom'
+			nom.textContent = c.nom
+			texte.append(nom)
+			if (c.societe && c.societe !== c.nom) {
+				const soc = document.createElement('span')
+				soc.className = 'tel3cx-num'
+				soc.textContent = c.societe
+				texte.append(soc)
+			}
+			const puces = document.createElement('span')
+			puces.className = 'tel3cx-puces'
+			for (const n of c.numeros) {
+				const b = document.createElement('button')
+				b.type = 'button'
+				b.className = 'tel3cx-puce'
+				const numero = numeroAComposer(n.numero)
+				const libelle = `${c.nom} (${n.type.toLowerCase()})`
+				b.title = `Appeler ${c.nom} — ${n.type} ${n.numero}`
+				b.innerHTML = '<span class="tel3cx-puce-type"></span> <span></span>'
+				b.firstChild.textContent = n.type
+				b.lastChild.textContent = lisible(numero)
+				b.addEventListener('click', (e) => { e.stopPropagation(); appelerDirect(numero, libelle) })
+				puces.append(b)
+			}
+			texte.append(puces)
+			li.append(avatar, texte)
+			const premier = c.numeros[0]
+			const libelle1 = `${c.nom} (${premier.type.toLowerCase()})`
+			li.addEventListener('click', () => remplir(numeroAComposer(premier.numero), libelle1))
+			li.addEventListener('keydown', (e) => { if (e.key === 'Enter') appelerDirect(numeroAComposer(premier.numero), libelle1) })
+			return li
+		}
+
 		function afficherContacts() {
 			listeContacts.replaceChildren()
-			if (!etat.annuaireDisponible) {
-				const li = document.createElement('li')
-				li.className = 'tel3cx-vide'
-				li.textContent = 'L\'annuaire du standard arrive bientôt. En attendant, tapez un numéro ou un poste.'
-				listeContacts.append(li)
-				return
-			}
-			if (etat.contacts === null) {
-				const li = document.createElement('li')
-				li.className = 'tel3cx-vide'
-				li.textContent = 'Chargement…'
-				listeContacts.append(li)
-				return
-			}
 			const mots = sansAccents(filtreContacts.value).split(/\s+/).filter(Boolean)
+			const chiffres = filtreContacts.value.replace(/\D/g, '')
+			const correspond = (texte, numeros) => {
+				const t = sansAccents(texte)
+				if (mots.every((m) => t.includes(m))) return true
+				return chiffres.length >= 3 && numeros.some((n) => n.replace(/\D/g, '').includes(chiffres))
+			}
 			const moi = etat.identifiants && etat.identifiants.utilisateur
-			const visibles = etat.contacts.filter((c) => c.poste !== moi
-				&& mots.every((m) => sansAccents(c.nom + ' ' + c.poste).includes(m)))
-			if (!visibles.length) {
-				const li = document.createElement('li')
-				li.className = 'tel3cx-vide'
-				li.textContent = 'Aucun contact trouvé.'
-				listeContacts.append(li)
+
+			// Collègues (annuaire du standard)
+			if (etat.contacts === null) {
+				listeContacts.append(ligneVide('Chargement…'))
 				return
 			}
-			for (const c of visibles) {
-				const li = document.createElement('li')
-				li.className = 'tel3cx-contact'
-				li.tabIndex = 0
-				const avatar = document.createElement('span')
-				avatar.className = 'tel3cx-avatar'
-				avatar.style.background = couleur(c.nom)
-				avatar.textContent = initiales(c.nom)
-				const presence = document.createElement('span')
-				presence.className = 'tel3cx-presence ' + (c.enregistre ? 'tel3cx-dispo' : 'tel3cx-absent')
-				presence.title = c.enregistre ? 'Connecté' : 'Non connecté'
-				avatar.append(presence)
-				const texte = document.createElement('span')
-				texte.className = 'tel3cx-contact-texte'
-				texte.innerHTML = '<span class="tel3cx-nom"></span><span class="tel3cx-num"></span>'
-				texte.querySelector('.tel3cx-nom').textContent = c.nom
-				texte.querySelector('.tel3cx-num').textContent = 'Poste ' + c.poste
-				const libelle = `${c.nom} (poste ${c.poste})`
-				li.append(avatar, texte, boutonAppelPetit(c.poste, libelle))
-				li.addEventListener('click', () => remplir(c.poste, libelle))
-				li.addEventListener('keydown', (e) => { if (e.key === 'Enter') appelerDirect(c.poste, libelle) })
-				listeContacts.append(li)
+			const collegues = etat.annuaireDisponible
+				? etat.contacts.filter((c) => c.poste !== moi && correspond(c.nom + ' ' + c.poste, [c.poste])) : []
+			listeContacts.append(titreSection('Collègues', etat.annuaireDisponible ? collegues.length : undefined))
+			if (!etat.annuaireDisponible) {
+				listeContacts.append(ligneVide('L\'annuaire du standard arrive bientôt.'))
+			} else if (!collegues.length) {
+				listeContacts.append(ligneVide('Aucun collègue trouvé.'))
+			}
+			collegues.forEach((c) => listeContacts.append(ligneCollegue(c)))
+
+			// Contacts personnels (carnet Outlook / mailcow) et partagés
+			const perso = (etat.mesContacts || []).filter((c) =>
+				correspond(c.nom + ' ' + (c.societe || ''), c.numeros.map((n) => n.numero)))
+			listeContacts.append(titreSection('Mes contacts', perso.length))
+			if (etat.mesContacts === null) {
+				listeContacts.append(ligneVide('Chargement…'))
+			} else if (!perso.length) {
+				listeContacts.append(ligneVide(mots.length || chiffres ? 'Aucun contact trouvé.' : 'Aucun contact avec numéro dans votre carnet.'))
+			}
+			const LIMITE = 150
+			perso.slice(0, LIMITE).forEach((c) => listeContacts.append(ligneContact(c)))
+			if (perso.length > LIMITE) {
+				listeContacts.append(ligneVide(`… et ${perso.length - LIMITE} autres : affinez la recherche.`))
 			}
 		}
 
 		async function chargerContacts() {
-			const r = await api('GET', 'annuaire', { texte: '' })
-			etat.annuaireDisponible = !!(r.ok && r.disponible)
-			etat.contacts = etat.annuaireDisponible ? (r.contacts || []) : []
+			const [annuaire, carnet] = await Promise.all([
+				api('GET', 'annuaire', { texte: '' }),
+				api('GET', 'contacts'),
+			])
+			etat.annuaireDisponible = !!(annuaire.ok && annuaire.disponible)
+			etat.contacts = etat.annuaireDisponible ? (annuaire.contacts || []) : []
+			etat.mesContacts = carnet.ok ? [...(carnet.contacts || []), ...(carnet.partages || [])] : []
 			afficherContacts()
 		}
 
