@@ -492,6 +492,7 @@
 					afficherMessage('Appel terminé.', 'info')
 				}
 				chargerRecents()
+				if (etat.tableau) setTimeout(chargerHistorique, 1500) // le temps que le standard enregistre l'appel
 			}
 			session.on('ended', fin('fin'))
 			session.on('failed', fin('echec'))
@@ -617,6 +618,7 @@
 		}
 
 		function fermer() {
+			if (etat.tableau) return // dans le tableau de bord, le pavé reste affiché
 			etat.ouvert = false
 			panneau.hidden = true
 			boutonEntete.setAttribute('aria-expanded', 'false')
@@ -659,7 +661,216 @@
 			majBouton()
 		})
 
-		// ---------------------------------------------------------- bouton d'en-tête
+		// ---------------------------------------------------------- tableau de bord (contacts, pavé, récents)
+
+		etat.tableau = false
+		etat.contacts = null          // null = pas encore chargés
+		etat.annuaireDisponible = true
+		etat.filtreRecents = 'tous'
+
+		const tableau = document.createElement('div')
+		tableau.className = 'tel3cx-tableau'
+		tableau.setAttribute('role', 'region')
+		tableau.setAttribute('aria-label', 'Téléphonie')
+		tableau.hidden = true
+		tableau.innerHTML = `
+			<section class="tel3cx-col tel3cx-col-contacts">
+				<h2>Contacts</h2>
+				<input type="search" class="tel3cx-filtre-contacts" placeholder="Rechercher un collègue ou un poste" aria-label="Rechercher un contact">
+				<ul class="tel3cx-contacts"></ul>
+			</section>
+			<section class="tel3cx-col tel3cx-col-centre"></section>
+			<section class="tel3cx-col tel3cx-col-recents">
+				<h2>Appels récents</h2>
+				<div class="tel3cx-onglets" role="tablist">
+					<button type="button" role="tab" data-filtre="tous" aria-selected="true">Tous</button>
+					<button type="button" role="tab" data-filtre="manque" aria-selected="false">Manqués</button>
+				</div>
+				<ul class="tel3cx-historique"></ul>
+				<p class="tel3cx-note"></p>
+			</section>`
+		const colonneCentre = tableau.querySelector('.tel3cx-col-centre')
+		const listeContacts = tableau.querySelector('.tel3cx-contacts')
+		const filtreContacts = tableau.querySelector('.tel3cx-filtre-contacts')
+		const listeHistorique = tableau.querySelector('.tel3cx-historique')
+
+		function sansAccents(t) {
+			return (t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+		}
+
+		function initiales(nom) {
+			const mots = (nom || '?').trim().split(/\s+/)
+			return ((mots[0] || '?')[0] + (mots.length > 1 ? mots[mots.length - 1][0] : '')).toUpperCase()
+		}
+
+		function couleur(texte) {
+			let h = 0
+			for (const c of texte || '') h = (h * 31 + c.charCodeAt(0)) % 360
+			return `hsl(${h}, 45%, 45%)`
+		}
+
+		/** Appel immédiat (depuis un contact ou un récent). */
+		function appelerDirect(numero, libelle) {
+			if (etat.session) { afficherMessage('Un appel est déjà en cours.', 'erreur'); return }
+			remplir(numero, libelle)
+			if (!boutonAppeler.disabled) appeler()
+		}
+
+		function boutonAppelPetit(numero, libelle) {
+			const b = document.createElement('button')
+			b.type = 'button'
+			b.className = 'tel3cx-appel-rapide'
+			b.title = 'Appeler ' + libelle
+			b.setAttribute('aria-label', 'Appeler ' + libelle)
+			b.innerHTML = icone('tel', 18)
+			b.addEventListener('click', (e) => { e.stopPropagation(); appelerDirect(numero, libelle) })
+			return b
+		}
+
+		function afficherContacts() {
+			listeContacts.replaceChildren()
+			if (!etat.annuaireDisponible) {
+				const li = document.createElement('li')
+				li.className = 'tel3cx-vide'
+				li.textContent = 'L\'annuaire du standard arrive bientôt. En attendant, tapez un numéro ou un poste.'
+				listeContacts.append(li)
+				return
+			}
+			if (etat.contacts === null) {
+				const li = document.createElement('li')
+				li.className = 'tel3cx-vide'
+				li.textContent = 'Chargement…'
+				listeContacts.append(li)
+				return
+			}
+			const mots = sansAccents(filtreContacts.value).split(/\s+/).filter(Boolean)
+			const moi = etat.identifiants && etat.identifiants.utilisateur
+			const visibles = etat.contacts.filter((c) => c.poste !== moi
+				&& mots.every((m) => sansAccents(c.nom + ' ' + c.poste).includes(m)))
+			if (!visibles.length) {
+				const li = document.createElement('li')
+				li.className = 'tel3cx-vide'
+				li.textContent = 'Aucun contact trouvé.'
+				listeContacts.append(li)
+				return
+			}
+			for (const c of visibles) {
+				const li = document.createElement('li')
+				li.className = 'tel3cx-contact'
+				li.tabIndex = 0
+				const avatar = document.createElement('span')
+				avatar.className = 'tel3cx-avatar'
+				avatar.style.background = couleur(c.nom)
+				avatar.textContent = initiales(c.nom)
+				const presence = document.createElement('span')
+				presence.className = 'tel3cx-presence ' + (c.enregistre ? 'tel3cx-dispo' : 'tel3cx-absent')
+				presence.title = c.enregistre ? 'Connecté' : 'Non connecté'
+				avatar.append(presence)
+				const texte = document.createElement('span')
+				texte.className = 'tel3cx-contact-texte'
+				texte.innerHTML = '<span class="tel3cx-nom"></span><span class="tel3cx-num"></span>'
+				texte.querySelector('.tel3cx-nom').textContent = c.nom
+				texte.querySelector('.tel3cx-num').textContent = 'Poste ' + c.poste
+				const libelle = `${c.nom} (poste ${c.poste})`
+				li.append(avatar, texte, boutonAppelPetit(c.poste, libelle))
+				li.addEventListener('click', () => remplir(c.poste, libelle))
+				li.addEventListener('keydown', (e) => { if (e.key === 'Enter') appelerDirect(c.poste, libelle) })
+				listeContacts.append(li)
+			}
+		}
+
+		async function chargerContacts() {
+			const r = await api('GET', 'annuaire', { texte: '' })
+			etat.annuaireDisponible = !!(r.ok && r.disponible)
+			etat.contacts = etat.annuaireDisponible ? (r.contacts || []) : []
+			afficherContacts()
+		}
+
+		function formatDureeCourte(s) {
+			if (!s) return ''
+			return s < 60 ? `${s} s` : `${Math.floor(s / 60)} min ${String(s % 60).padStart(2, '0')}`
+		}
+
+		async function chargerHistorique() {
+			let appels
+			let note = ''
+			const r = await api('GET', 'historique')
+			if (r.ok && r.disponible) {
+				appels = (r.appels || []).map((a) => ({
+					date: a.date, numero: a.numero, sens: a.sens, statut: a.statut, duree: a.duree,
+					libelle: a.nom ? `${a.nom} (${lisible(a.numero)})` : lisible(a.numero),
+				}))
+			} else {
+				appels = lireRecentsLocaux().map((a) => ({
+					date: a.date, numero: a.numero, libelle: a.libelle,
+					sens: a.sens === 'manque' ? 'entrant' : a.sens, statut: a.sens === 'manque' ? 'manque' : 'repondu',
+				}))
+				note = 'Historique de cet appareil uniquement (l\'historique complet du standard arrive bientôt).'
+			}
+			tableau.querySelector('.tel3cx-note').textContent = note
+			listeHistorique.replaceChildren()
+			const filtres = appels.filter((a) => etat.filtreRecents === 'tous' || a.statut === 'manque')
+			if (!filtres.length) {
+				const li = document.createElement('li')
+				li.className = 'tel3cx-vide'
+				li.textContent = etat.filtreRecents === 'manque' ? 'Aucun appel manqué.' : 'Aucun appel récent.'
+				listeHistorique.append(li)
+			}
+			for (const a of filtres.slice(0, 100)) {
+				const li = document.createElement('li')
+				li.className = 'tel3cx-recent' + (a.statut === 'manque' ? ' tel3cx-manque' : '')
+				li.tabIndex = 0
+				const sens = document.createElement('span')
+				sens.className = 'tel3cx-sens'
+				sens.textContent = a.statut === 'manque' ? '✕' : a.sens === 'sortant' ? '↗' : '↙'
+				sens.title = a.statut === 'manque' ? 'Manqué' : a.sens === 'sortant' ? 'Émis' : 'Reçu'
+				const texte = document.createElement('span')
+				texte.className = 'tel3cx-contact-texte'
+				texte.innerHTML = '<span class="tel3cx-nom"></span><span class="tel3cx-num"></span>'
+				texte.querySelector('.tel3cx-nom').textContent = a.libelle
+				texte.querySelector('.tel3cx-num').textContent = [formatDate(a.date), formatDureeCourte(a.duree)].filter(Boolean).join(' · ')
+				li.append(sens, texte, boutonAppelPetit(a.numero, a.libelle))
+				li.addEventListener('click', () => remplir(a.numero, a.libelle))
+				li.addEventListener('keydown', (e) => { if (e.key === 'Enter') appelerDirect(a.numero, a.libelle) })
+				listeHistorique.append(li)
+			}
+		}
+
+		tableau.querySelectorAll('[data-filtre]').forEach((b) => b.addEventListener('click', () => {
+			etat.filtreRecents = b.dataset.filtre
+			tableau.querySelectorAll('[data-filtre]').forEach((x) => x.setAttribute('aria-selected', String(x === b)))
+			chargerHistorique()
+		}))
+		filtreContacts.addEventListener('input', afficherContacts)
+
+		function ouvrirTableau() {
+			etat.tableau = true
+			tableau.hidden = false
+			boutonTableau.setAttribute('aria-pressed', 'true')
+			colonneCentre.append(panneau)
+			panneau.classList.add('tel3cx-dans-tableau')
+			panneau.hidden = false
+			etat.ouvert = true
+			boutonEntete.setAttribute('aria-expanded', 'false')
+			if (etat.mode === 'rappel') chargerEtatRappel()
+			afficherContacts()
+			chargerContacts()
+			chargerHistorique()
+			majBouton()
+			if (!etat.session) filtreContacts.focus()
+		}
+
+		function fermerTableau() {
+			etat.tableau = false
+			tableau.hidden = true
+			boutonTableau.setAttribute('aria-pressed', 'false')
+			panneau.classList.remove('tel3cx-dans-tableau')
+			document.body.append(panneau)
+			// Un appel en cours reste visible dans le panneau déroulant.
+			if (etat.session) ouvrir(); else fermer()
+		}
+
+		// ---------------------------------------------------------- boutons d'en-tête
 
 		const boutonEntete = document.createElement('button')
 		boutonEntete.type = 'button'
@@ -673,15 +884,31 @@
 		boutonEntete.append(pastille)
 		boutonEntete.addEventListener('click', (e) => {
 			e.stopPropagation()
+			if (etat.tableau) { fermerTableau(); ouvrir(); return }
 			etat.ouvert ? fermer() : ouvrir()
 		})
 
+		const boutonTableau = document.createElement('button')
+		boutonTableau.type = 'button'
+		boutonTableau.className = 'tel3cx-bouton-entete tel3cx-bouton-tableau'
+		boutonTableau.title = 'Téléphonie : contacts, appels récents, pavé numérique'
+		boutonTableau.setAttribute('aria-label', 'Téléphonie')
+		boutonTableau.setAttribute('aria-pressed', 'false')
+		boutonTableau.innerHTML = icone('clavier', 20)
+		boutonTableau.addEventListener('click', (e) => {
+			e.stopPropagation()
+			etat.tableau ? fermerTableau() : ouvrirTableau()
+		})
+
 		document.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape' && etat.ouvert && !etat.session) fermer()
+			if (e.key !== 'Escape') return
+			if (etat.tableau && !etat.session) fermerTableau()
+			else if (etat.ouvert && !etat.session) fermer()
 		})
 		document.addEventListener('mousedown', (e) => {
-			// Pendant un appel, le panneau reste ouvert.
-			if (etat.ouvert && !etat.session && !panneau.contains(e.target) && !boutonEntete.contains(e.target)) fermer()
+			// Pendant un appel ou dans le tableau de bord, le pavé reste affiché.
+			if (etat.ouvert && !etat.tableau && !etat.session && !panneau.contains(e.target)
+				&& !boutonEntete.contains(e.target) && !boutonTableau.contains(e.target)) fermer()
 		})
 		// Les liens « tel: » de la page ouvrent le clavier avec le numéro.
 		document.addEventListener('click', (e) => {
@@ -693,14 +920,14 @@
 
 		const conteneurBouton = document.createElement('div')
 		conteneurBouton.className = 'tel3cx-entete'
-		conteneurBouton.append(boutonEntete)
+		conteneurBouton.append(boutonEntete, boutonTableau)
 		if (conteneur) {
 			conteneur.prepend(conteneurBouton)
 		} else {
 			conteneurBouton.classList.add('tel3cx-flottant')
 			document.body.append(conteneurBouton)
 		}
-		document.body.append(panneau, audioDistant)
+		document.body.append(tableau, panneau, audioDistant)
 
 		// ---------------------------------------------------------- démarrage
 

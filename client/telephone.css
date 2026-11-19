@@ -324,3 +324,197 @@
 .tel3cx-clavier[hidden], .tel3cx-saisie[hidden] { display: none; }
 
 .tel3cx-recents button.tel3cx-manque .tel3cx-nom { color: var(--color-error, #c9302c); }
+
+/* ------------------------------------------------------------------ boutons d'en-tête (correctif 19/11/2026)
+   Les styles de Nextcloud pour « button » sont plus forts que .tel3cx-bouton-entete : on les neutralise
+   avec une règle plus précise, pour ressembler aux autres icônes de la barre (fond transparent, rond). */
+
+.tel3cx-entete { gap: 2px; }
+
+.tel3cx-entete button.tel3cx-bouton-entete,
+.tel3cx-entete button.tel3cx-bouton-entete:not(:disabled):hover,
+.tel3cx-entete button.tel3cx-bouton-entete:focus {
+	position: relative;
+	width: var(--default-clickable-area, 34px);
+	height: var(--default-clickable-area, 34px);
+	min-width: 0;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--color-background-plain-text, #fff);
+	box-shadow: none;
+	opacity: .9;
+}
+.tel3cx-entete button.tel3cx-bouton-entete:not(:disabled):hover,
+.tel3cx-entete button.tel3cx-bouton-entete:focus-visible,
+.tel3cx-entete button.tel3cx-bouton-entete[aria-expanded="true"],
+.tel3cx-entete button.tel3cx-bouton-entete[aria-pressed="true"] {
+	opacity: 1;
+	background: rgba(255, 255, 255, .18);
+}
+.tel3cx-entete button.tel3cx-bouton-entete.tel3cx-en-ligne { background: rgba(47, 177, 48, .45); }
+
+/* Pastille d'état : petit rond dans le coin, détouré de la couleur de l'en-tête, comme le statut de l'avatar. */
+.tel3cx-entete .tel3cx-pastille {
+	right: 3px;
+	bottom: 3px;
+	width: 9px;
+	height: 9px;
+	box-shadow: 0 0 0 2px var(--color-primary, #00679e);
+}
+
+.tel3cx-flottant { gap: 8px; }
+
+/* Appels manqués : rouge franc et lisible. */
+.tel3cx-recents button.tel3cx-manque .tel3cx-nom,
+.tel3cx-recent.tel3cx-manque .tel3cx-nom,
+.tel3cx-recent.tel3cx-manque .tel3cx-sens { color: #c62828; font-weight: bold; }
+
+/* ------------------------------------------------------------------ tableau de bord de téléphonie */
+
+.tel3cx-tableau {
+	position: fixed;
+	top: var(--header-height, 50px);
+	right: 0;
+	bottom: 0;
+	left: 0;
+	z-index: 1999;
+	display: grid;
+	grid-template-columns: minmax(240px, 320px) minmax(300px, 1fr) minmax(260px, 380px);
+	gap: 0;
+	background: var(--color-main-background);
+	color: var(--color-main-text);
+	font-size: var(--default-font-size, 15px);
+}
+.tel3cx-tableau[hidden] { display: none; }
+
+.tel3cx-col {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	padding: 16px;
+	overflow: hidden;
+}
+.tel3cx-col + .tel3cx-col { border-left: 1px solid var(--color-border, #ededed); }
+.tel3cx-col h2 { margin: 0 0 12px; font-size: 1.25em; font-weight: bold; }
+
+.tel3cx-col-centre { align-items: center; overflow-y: auto; background: var(--color-background-hover); }
+
+.tel3cx-tableau input.tel3cx-filtre-contacts { width: 100%; margin: 0 0 10px; }
+
+.tel3cx-contacts, .tel3cx-historique {
+	flex: 1;
+	margin: 0;
+	padding: 0;
+	overflow-y: auto;
+	list-style: none;
+}
+
+.tel3cx-contact, .tel3cx-recent {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 7px 8px;
+	border-radius: var(--border-radius-large, 10px);
+	cursor: pointer;
+}
+.tel3cx-contact:hover, .tel3cx-recent:hover, .tel3cx-contact:focus-visible, .tel3cx-recent:focus-visible {
+	background: var(--color-background-hover);
+	outline: none;
+}
+
+.tel3cx-avatar {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	color: #fff;
+	font-size: .85em;
+	font-weight: bold;
+}
+.tel3cx-presence {
+	position: absolute;
+	right: -1px;
+	bottom: -1px;
+	width: 11px;
+	height: 11px;
+	border-radius: 50%;
+	box-shadow: 0 0 0 2px var(--color-main-background);
+}
+.tel3cx-dispo { background: #2fb130; }
+.tel3cx-absent { background: #9e9e9e; }
+
+.tel3cx-contact-texte { display: flex; flex: 1; flex-direction: column; min-width: 0; }
+.tel3cx-contact-texte .tel3cx-nom { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tel3cx-contact-texte .tel3cx-num { font-size: .85em; color: var(--color-text-maxcontrast); }
+
+.tel3cx-sens { width: 22px; flex-shrink: 0; text-align: center; color: var(--color-text-maxcontrast); font-size: 1.1em; }
+
+.tel3cx-tableau button.tel3cx-appel-rapide {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 34px;
+	height: 34px;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: transparent;
+	color: #2d7b41;
+	opacity: 0;
+	cursor: pointer;
+}
+.tel3cx-contact:hover .tel3cx-appel-rapide, .tel3cx-recent:hover .tel3cx-appel-rapide,
+.tel3cx-contact:focus-within .tel3cx-appel-rapide, .tel3cx-recent:focus-within .tel3cx-appel-rapide { opacity: 1; }
+.tel3cx-tableau button.tel3cx-appel-rapide:hover { background: rgba(45, 123, 65, .15); }
+
+.tel3cx-onglets { display: flex; gap: 6px; margin-bottom: 10px; }
+.tel3cx-tableau .tel3cx-onglets button {
+	margin: 0;
+	padding: 4px 14px;
+	min-height: 0;
+	border: 1px solid var(--color-border-dark, #dbdbdb);
+	border-radius: var(--border-radius-pill, 20px);
+	background: transparent;
+	color: var(--color-main-text);
+	cursor: pointer;
+}
+.tel3cx-tableau .tel3cx-onglets button[aria-selected="true"] {
+	border-color: var(--color-primary-element);
+	background: var(--color-primary-element);
+	color: var(--color-primary-element-text);
+}
+
+.tel3cx-note { margin: 8px 0 0; font-size: .8em; color: var(--color-text-maxcontrast); }
+.tel3cx-note:empty { display: none; }
+
+/* Le panneau du téléphone, posé au centre du tableau de bord au lieu d'être déroulant. */
+.tel3cx-panneau.tel3cx-dans-tableau {
+	position: static;
+	width: 340px;
+	max-width: 100%;
+	max-height: none;
+	margin-top: 8px;
+	box-shadow: 0 0 10px var(--color-box-shadow);
+}
+.tel3cx-panneau.tel3cx-dans-tableau .tel3cx-recents-bloc { display: none; }
+.tel3cx-panneau.tel3cx-dans-tableau .tel3cx-clavier button { height: 58px; }
+
+/* Petites fenêtres : une seule colonne, pavé d'abord. */
+@media (max-width: 900px) {
+	.tel3cx-tableau { grid-template-columns: 1fr; grid-auto-rows: auto; overflow-y: auto; }
+	.tel3cx-col { overflow: visible; }
+	.tel3cx-col + .tel3cx-col { border-left: none; border-top: 1px solid var(--color-border, #ededed); }
+	.tel3cx-col-centre { order: -1; }
+	.tel3cx-contacts, .tel3cx-historique { max-height: 50vh; }
+}
