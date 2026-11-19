@@ -4,7 +4,8 @@
  * et par la version personnalisée de Talk Desktop (voir talk-3cx/talk-desktop/).
  * JavaScript simple, sans compilation ; le mode téléphone utilise JsSIP (window.JsSIP).
  *
- * window.Telephone3CX.monter({ conteneur, api })
+ * window.Telephone3CX.monter({ conteneur, api, reunion })
+ *   reunion() -> Promise<{ ok, lien_organisateur?, lien_invites?, message? }> (appli « Réunions », Jitsi)
  *   conteneur : élément où placer le bouton (sinon bouton flottant en bas à droite)
  *   api(methode, action, donnees) -> Promise<{ ok, message?, statut?, ... }>
  *     actions : 'sip' | 'etat' | 'appel' | 'recents' | 'recherche'
@@ -122,7 +123,7 @@
 
 	// ------------------------------------------------------------------ montage
 
-	function monter({ conteneur, api }) {
+	function monter({ conteneur, api, reunion }) {
 		const etat = {
 			ouvert: false, libelle: '', minuteRecherche: null, enCours: false,
 			mode: 'rappel', identifiants: null, ua: null, enregistre: false,
@@ -1055,6 +1056,99 @@
 			document.body.append(conteneurBouton)
 		}
 		document.body.append(tableau, panneau, audioDistant)
+
+		// ---------------------------------------------------------- réunion Jitsi (bouton de l'accueil de Talk)
+		// « Commencer une réunion maintenant » crée une réunion Jitsi (meet.hoalen-avocats.com) par l'appli
+		// Nextcloud « Réunions » et y fait entrer le collaborateur comme organisateur, sans autre clic.
+
+		const fenetreReunion = document.createElement('div')
+		fenetreReunion.className = 'tel3cx-reunion'
+		fenetreReunion.setAttribute('role', 'dialog')
+		fenetreReunion.setAttribute('aria-label', 'Votre réunion est prête')
+		fenetreReunion.hidden = true
+		fenetreReunion.innerHTML = `
+			<div class="tel3cx-reunion-carte">
+				<button type="button" class="tel3cx-reunion-fermer" aria-label="Fermer" title="Fermer">✕</button>
+				<div class="tel3cx-reunion-titre">Votre réunion est prête</div>
+				<p class="tel3cx-reunion-texte">Elle s'ouvre dans votre navigateur. Envoyez ce lien à vos invités :
+					ils patienteront en salle d'attente jusqu'à ce que vous les fassiez entrer.</p>
+				<input type="text" class="tel3cx-reunion-lien" readonly aria-label="Lien d'invitation">
+				<div class="tel3cx-reunion-actions">
+					<button type="button" class="tel3cx-reunion-copier">Copier le lien</button>
+					<button type="button" class="tel3cx-reunion-courriel">Envoyer par e-mail</button>
+					<button type="button" class="tel3cx-reunion-rejoindre">Rouvrir la réunion</button>
+				</div>
+				<div class="tel3cx-reunion-message" aria-live="polite"></div>
+			</div>`
+		const lienInvites = fenetreReunion.querySelector('.tel3cx-reunion-lien')
+		const messageReunion = fenetreReunion.querySelector('.tel3cx-reunion-message')
+		let lienOrganisateur = ''
+		let reunionEnCours = false
+
+		const fermerReunion = () => { fenetreReunion.hidden = true }
+		fenetreReunion.querySelector('.tel3cx-reunion-fermer').addEventListener('click', fermerReunion)
+		fenetreReunion.addEventListener('mousedown', (e) => { if (e.target === fenetreReunion) fermerReunion() })
+		fenetreReunion.querySelector('.tel3cx-reunion-copier').addEventListener('click', async () => {
+			try {
+				await navigator.clipboard.writeText(lienInvites.value)
+			} catch (e) {
+				lienInvites.select()
+				document.execCommand('copy')
+			}
+			messageReunion.textContent = 'Lien copié : collez-le dans votre message ou votre invitation.'
+		})
+		fenetreReunion.querySelector('.tel3cx-reunion-courriel').addEventListener('click', () => {
+			const sujet = 'Invitation à une réunion vidéo'
+			const corps = `Bonjour,\n\nJe vous invite à rejoindre ma réunion vidéo :\n${lienInvites.value}\n\nAucun compte n'est nécessaire ; vous patienterez quelques instants en salle d'attente.\n\nBien cordialement`
+			window.open(`mailto:?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(corps)}`)
+		})
+		fenetreReunion.querySelector('.tel3cx-reunion-rejoindre').addEventListener('click', () => {
+			if (lienOrganisateur) window.open(lienOrganisateur, '_blank', 'noopener')
+		})
+
+		async function demarrerReunion() {
+			if (reunionEnCours) return
+			reunionEnCours = true
+			// Navigateur : on ouvre l'onglet tout de suite (sinon le bloqueur de fenêtres l'empêche après l'attente).
+			// Talk Desktop : les liens extérieurs partent d'eux-mêmes dans le navigateur par défaut.
+			const onglet = window.TALK_DESKTOP ? null : window.open('about:blank', '_blank')
+			try {
+				const r = await reunion()
+				if (!r.ok || !r.lien_organisateur) {
+					if (onglet) onglet.close()
+					window.alert(r.message || 'La réunion n\'a pas pu être créée. Réessayez dans un instant.')
+					return
+				}
+				lienOrganisateur = r.lien_organisateur
+				if (onglet) {
+					onglet.opener = null
+					onglet.location.href = lienOrganisateur
+				} else {
+					window.open(lienOrganisateur, '_blank')
+				}
+				lienInvites.value = r.lien_invites || ''
+				messageReunion.textContent = ''
+				fenetreReunion.hidden = false
+				lienInvites.focus()
+				lienInvites.select()
+			} finally {
+				reunionEnCours = false
+			}
+		}
+
+		if (typeof reunion === 'function') {
+			document.body.append(fenetreReunion)
+			// Interception au tout début du clic, avant que Talk ne lance sa propre visio.
+			document.addEventListener('click', (e) => {
+				const bouton = e.target.closest && e.target.closest('button')
+				if (!bouton) return
+				const texte = (bouton.textContent || '').replace(/\s+/g, ' ').trim()
+				if (texte !== 'Commencer une réunion maintenant' && texte !== 'Start meeting now') return
+				e.preventDefault()
+				e.stopImmediatePropagation()
+				demarrerReunion()
+			}, true)
+		}
 
 		// ---------------------------------------------------------- démarrage
 

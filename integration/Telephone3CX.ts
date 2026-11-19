@@ -17,7 +17,7 @@ type Reponse = { ok: boolean, statut?: number, message?: string, [cle: string]: 
 
 declare global {
 	interface Window {
-		Telephone3CX: { monter(options: { conteneur: HTMLElement | null, api: typeof api }): unknown }
+		Telephone3CX: { monter(options: { conteneur: HTMLElement | null, api: typeof api, reunion: typeof reunion }): unknown }
 	}
 }
 
@@ -47,6 +47,25 @@ async function api(methode: 'GET' | 'POST', action: string, donnees?: Record<str
  * Place le bouton Téléphone dans l'élément donné (barre de titre).
  * Le bouton disparaît de lui-même si le compte n'a pas droit au téléphone.
  */
+// Réunion vidéo Jitsi : appli Nextcloud « Réunions » (voir /root/docker-stack/jitsi/pret-pour-talk.md)
+async function reunion(): Promise<Reponse> {
+	try {
+		const reponse = await axios.request({
+			method: 'POST',
+			url: generateOcsUrl('apps/reunions/api/v1/reunion'),
+			params: { format: 'json' },
+			validateStatus: () => true,
+		})
+		const donnees = reponse.data?.ocs?.data
+		if (reponse.status === 200 && donnees?.lien_organisateur) {
+			return { ok: true, ...donnees }
+		}
+		return { ok: false, message: `La réunion n'a pas pu être créée (${reponse.status}).` }
+	} catch {
+		return { ok: false, message: 'Serveur injoignable : vérifiez votre connexion.' }
+	}
+}
+
 export function monterTelephone(conteneur: HTMLElement | null) {
-	window.Telephone3CX.monter({ conteneur, api })
+	window.Telephone3CX.monter({ conteneur, api, reunion })
 }

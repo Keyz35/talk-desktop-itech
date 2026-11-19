@@ -761,3 +761,77 @@ body[data-theme-dark] .tel3cx-tableau .tel3cx-onglets button[aria-selected="true
 .tel3cx-entete .tel3cx-pastille { box-shadow: 0 0 0 2px var(--color-background-plain, #00679e); }
 .tel3cx-pastille.tel3cx-pret { background: #7fb874; }
 .tel3cx-pastille.tel3cx-hors { background: #e0a91c; }
+
+/* ------------------------------------------------------------------ « Votre réunion est prête » (Jitsi) */
+.tel3cx-reunion {
+	position: fixed;
+	inset: 0;
+	z-index: 10010;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(2, 18, 22, .35);
+	font-family: 'Outfit Hoalen', var(--font-face, sans-serif);
+}
+.tel3cx-reunion[hidden] { display: none; }
+.tel3cx-reunion-carte {
+	position: relative;
+	box-sizing: border-box;
+	width: 460px;
+	max-width: calc(100vw - 32px);
+	padding: 26px 26px 20px;
+	border-radius: 18px;
+	background: var(--color-main-background, #fbfaf8);
+	color: var(--color-main-text, #111110);
+	box-shadow: 0 16px 40px rgba(2, 18, 22, .25);
+}
+.tel3cx-reunion-titre { font-size: 1.35em; font-weight: 600; margin-bottom: 8px; }
+.tel3cx-reunion-titre::after { content: ''; display: block; width: 32px; height: 3px; margin-top: 8px; border-radius: 2px; background: #6b6862; }
+.tel3cx-reunion-texte { margin: 10px 0 14px; color: var(--color-text-maxcontrast, #5b5a55); line-height: 1.4; }
+.tel3cx-reunion input.tel3cx-reunion-lien {
+	width: 100%;
+	height: 42px;
+	margin: 0 0 14px;
+	padding: 0 16px;
+	border: 1px solid var(--color-border-dark, #b0b0af);
+	border-radius: 100px;
+	background: var(--color-main-background, #fbfaf8);
+	color: var(--color-main-text, #111110);
+	font-family: inherit;
+	font-size: .92em;
+}
+.tel3cx-reunion-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.tel3cx-reunion-actions button {
+	min-height: 0;
+	margin: 0;
+	padding: 9px 16px;
+	border: 1px solid var(--color-border-dark, #b0b0af);
+	border-radius: 100px;
+	background: transparent;
+	color: var(--color-main-text, #111110);
+	font-family: inherit;
+	font-size: 13px;
+	letter-spacing: .06em;
+	text-transform: uppercase;
+	cursor: pointer;
+}
+.tel3cx-reunion-actions button.tel3cx-reunion-copier { border-color: #6b6862; background: #6b6862; color: #fff; }
+.tel3cx-reunion-actions button:hover { border-color: #111110; }
+.tel3cx-reunion-actions button.tel3cx-reunion-copier:hover { background: #585651; }
+.tel3cx-reunion button.tel3cx-reunion-fermer {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	width: 32px;
+	height: 32px;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	border: none;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--color-text-maxcontrast, #5b5a55);
+	cursor: pointer;
+}
+.tel3cx-reunion button.tel3cx-reunion-fermer:hover { background: var(--color-background-hover, #f0ede4); }
+.tel3cx-reunion-message { min-height: 1.2em; margin-top: 10px; font-size: .88em; color: #3f7a36; }
