@@ -36,9 +36,9 @@ if [ -d "$APPLI" ]; then
   cp "$APPLI/js/telephone-noyau.js" "$APPLI/js/jssip.min.js" "$APPLI/js/jssip.LICENCE.md" "$APPLI/css/telephone.css" "$ICI/client/"
   mkdir -p "$ICI/client/fonts" "$ICI/client/charte"
   cp "$APPLI"/fonts/* "$ICI/client/fonts/"
-  cp "$APPLI/../../charte-hoalen/charte-talk-desktop.css" "$APPLI"/../../charte-hoalen/icone-hoalen*.svg "$APPLI/../../charte-hoalen/logo-chargement.svg" "$ICI/client/charte/"
+  cp "$APPLI/../../charte-hoalen/charte-talk-desktop.css" "$APPLI"/../../charte-hoalen/icone-hoalen*.svg "$APPLI/../../charte-hoalen/logo-chargement.svg" "$APPLI/../../charte-hoalen/logo-hoalen-sombre.svg" "$APPLI/../../charte-hoalen/installation.gif" "$ICI/client/charte/"
 fi
-for f in telephone-noyau.js jssip.min.js telephone.css fonts/outfit-latin-400-normal.woff2 charte/charte-talk-desktop.css charte/icone-hoalen.svg; do
+for f in telephone-noyau.js jssip.min.js telephone.css fonts/outfit-latin-400-normal.woff2 charte/charte-talk-desktop.css charte/icone-hoalen.svg charte/logo-hoalen-sombre.svg charte/installation.gif; do
   [ -f "$ICI/client/$f" ] || { echo "ÉCHEC : client/$f manquant" >&2; exit 1; }
 done
 DEST="$TRAVAIL/src/talk/renderer/Telephone3CX"
@@ -57,6 +57,13 @@ cp "$ICI/client/charte/icone-hoalen-trait-clair.svg" "$TRAVAIL/img/talk-icon-pla
 cp "$ICI/client/charte/icone-hoalen-trait-sombre.svg" "$TRAVAIL/img/talk-icon-plain-spaced-dark.svg"
 # Fenêtre de chargement : « O » + « Hoalen Talk Teams » à la place du logo Nextcloud Talk.
 cp "$ICI/client/charte/logo-chargement.svg" "$TRAVAIL/img/talk-logo.svg"
+# Fenêtre de connexion : logo Hoalen Avocats (foncé, sur le fond sable) à la place du logo Nextcloud.
+cp "$ICI/client/charte/logo-hoalen-sombre.svg" "$TRAVAIL/img/server-logo-plain.svg"
+# Image affichée pendant l'installation (Squirrel) : bulle « O » + « Hoalen Talk Teams ».
+cp "$ICI/client/charte/installation.gif" "$TRAVAIL/img/squirrel-install-loading.gif"
+# Couleurs Hoalen dans TOUTES les fenêtres (connexion, aide, appel entrant, mise à jour…) :
+# ajoutées à la feuille commune importée par chacune.
+{ printf '\n/* ---- Charte Hoalen (ajout iTech) ---- */\n'; cat "$ICI/client/charte/charte-talk-desktop.css"; } >> "$TRAVAIL/src/shared/assets/styles.css"
 python3 -I "$ICI/integration/modifier-talk-desktop.py" "$TRAVAIL"
 python3 -I - "$TRAVAIL/package.json" "$VERSION_ITECH" <<'PY2'
 import json, sys
