@@ -920,9 +920,49 @@
 		}))
 		filtreContacts.addEventListener('input', afficherContacts)
 
+		// Le tableau de bord occupe la zone de contenu de Talk (à droite du volet de navigation),
+		// qui reste visible ; il suit sa taille (volet replié, fenêtre redimensionnée).
+		const zoneContenu = () => document.querySelector('#app-content-vue') || document.querySelector('.app-content')
+			|| document.querySelector('#content-vue') || null
+		const voletNavigation = () => document.querySelector('#app-navigation-vue') || document.querySelector('.app-navigation') || null
+		let observateurTaille = null
+
+		function placerTableau() {
+			if (!etat.tableau) return
+			const zone = zoneContenu()
+			const r = zone ? zone.getBoundingClientRect() : null
+			if (r && r.width > 200 && r.height > 200) {
+				Object.assign(tableau.style, { top: r.top + 'px', left: r.left + 'px', width: r.width + 'px', height: r.height + 'px', right: 'auto', bottom: 'auto' })
+			} else {
+				Object.assign(tableau.style, { top: '', left: '', width: '', height: '', right: '', bottom: '' })
+			}			const largeur = tableau.getBoundingClientRect().width
+			tableau.classList.toggle('tel3cx-moyen', largeur < 1050 && largeur >= 700)
+			tableau.classList.toggle('tel3cx-etroit', largeur < 700)
+		}
+
+		function suivreZone() {
+			if (observateurTaille) observateurTaille.disconnect()
+			observateurTaille = new ResizeObserver(placerTableau)
+			const zone = zoneContenu()
+			if (zone) observateurTaille.observe(zone)
+			const nav = voletNavigation()
+			if (nav) observateurTaille.observe(nav)
+			observateurTaille.observe(document.body)
+		}
+
+		window.addEventListener('resize', placerTableau)
+		// Un clic dans le volet de navigation (conversation, accueil…) quitte la téléphonie.
+		document.addEventListener('click', (e) => {
+			if (!etat.tableau) return
+			const nav = voletNavigation()
+			if (nav && nav.contains(e.target)) fermerTableau()
+		}, true)
+
 		function ouvrirTableau() {
 			etat.tableau = true
 			tableau.hidden = false
+			placerTableau()
+			suivreZone()
 			boutonTableau.setAttribute('aria-pressed', 'true')
 			colonneCentre.append(panneau)
 			panneau.classList.add('tel3cx-dans-tableau')
@@ -940,6 +980,7 @@
 		function fermerTableau() {
 			etat.tableau = false
 			tableau.hidden = true
+			if (observateurTaille) { observateurTaille.disconnect(); observateurTaille = null }
 			boutonTableau.setAttribute('aria-pressed', 'false')
 			panneau.classList.remove('tel3cx-dans-tableau')
 			document.body.append(panneau)

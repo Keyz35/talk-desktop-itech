@@ -66,7 +66,7 @@ docker build -q -t "$IMAGE" "$ICI" > /dev/null
 
 echo "5/6 Compilation (long : 15 à 40 min)…"
 docker run --rm --cpus=1 --memory=3g --memory-swap=3g \
-  -e NODE_OPTIONS=--max-old-space-size=2560 \
+  -e NODE_OPTIONS=--max-old-space-size=2560 -e CHANNEL=stable \
   -v "$TRAVAIL:/src" -v talk-desktop-npm:/root/.npm \
   "$IMAGE" nice -n 10 bash -c '
     set -e
