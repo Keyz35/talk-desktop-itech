@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Ajoute le bouton Téléphone 3CX à la barre de titre de Talk Desktop.
+"""Ajoute le bouton Téléphone (et les mises à jour iTech) à la barre de titre de Talk Desktop.
 
 Usage : modifier-talk-desktop.py <dossier des sources de Talk Desktop>
 S'arrête avec une erreur explicite si le code de Talk Desktop a changé au point
@@ -34,7 +34,7 @@ if not deja:
         "const { isDevMode } = useDevMode()\n",
         "const { isDevMode } = useDevMode()\n"
         "\n"
-        "// Téléphone 3CX (ajout iTech)\n"
+        "// Téléphone (ajout iTech)\n"
         "const conteneurTelephone = ref<HTMLElement | null>(null)\n"
         "onMounted(() => monterTelephone(conteneurTelephone.value))\n",
     )

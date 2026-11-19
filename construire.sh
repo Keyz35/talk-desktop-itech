@@ -1,5 +1,5 @@
 #!/bin/bash
-# Compile la version personnalisée de Talk Desktop (bouton Téléphone 3CX) pour Windows x64.
+# Compile la version personnalisée de Talk Desktop (« Nextcloud Talk Teams » : bouton et téléphone intégré) pour Windows x64.
 #   ./construire.sh                -> Talk Desktop v2.3.5, révision iTech 1 (version 2.3.501)
 #   ./construire.sh v2.3.6 2       -> Talk Desktop v2.3.6, révision iTech 2 (version 2.3.602)
 # Numéro de version iTech = X.Y.(Z×100 + révision) : toujours croissant, ce qui permet aux PC

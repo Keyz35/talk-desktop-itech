@@ -69,9 +69,9 @@ else
 Nos ajouts ont été reposés et contrôlés, et la version $VERSION_ITECH est publiée sur le canal
 « test » uniquement. Les PC des utilisateurs restent en $STABLE.
 
-Pour tester sur un PC : créer %APPDATA%\\Nextcloud Talk 3CX\\canal-mises-a-jour.txt contenant « test »,
+Pour tester sur un PC : créer %APPDATA%\\Nextcloud Talk Teams\\canal-mises-a-jour.txt contenant « test »,
 puis redémarrer l'application (ou installer directement :
-https://maj-talk.itech.ovh/test/Nextcloud-Talk-3CX-installateur.exe).
+https://maj-talk.itech.ovh/test/Nextcloud-Talk-Teams-installateur.exe).
 
 Après essais (appels entrants et sortants, notifications, mise à jour) — bascule de tous les PC :
   cd <dossier talk-desktop sur le serveur> && ./publier.sh stable $VERSION_ITECH"

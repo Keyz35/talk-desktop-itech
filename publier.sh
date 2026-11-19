@@ -4,7 +4,7 @@
 #   ./publier.sh stable 2.3.601    -> canal « stable » (tous les PC)
 # Les PC installés par l'installateur vérifient toutes les 6 h et installent au redémarrage suivant.
 # Fichiers servis par le conteneur maj-talk : /srv/maj-talk/<canal>/windows-x64/{RELEASES,*.nupkg}
-# et le dernier installateur : /srv/maj-talk/<canal>/Nextcloud-Talk-3CX-installateur.exe
+# et le dernier installateur : /srv/maj-talk/<canal>/Nextcloud-Talk-Teams-installateur.exe
 set -euo pipefail
 
 CANAL="${1:-}"
@@ -34,7 +34,7 @@ read -r EMPREINTE NOM_PAQUET TAILLE < <(sed 's/^\xEF\xBB\xBF//' "$INDEX") || tru
 echo "2/4 Copie du paquet sur le canal « $CANAL »…"
 mkdir -p "$DEST"
 cp "$PAQUET_SRC" "$DEST/.$NOM_PAQUET.tmp" && mv "$DEST/.$NOM_PAQUET.tmp" "$DEST/$NOM_PAQUET"
-cp "$INSTALLATEUR" "$RACINE/$CANAL/.installateur.tmp" && mv "$RACINE/$CANAL/.installateur.tmp" "$RACINE/$CANAL/Nextcloud-Talk-3CX-installateur.exe"
+cp "$INSTALLATEUR" "$RACINE/$CANAL/.installateur.tmp" && mv "$RACINE/$CANAL/.installateur.tmp" "$RACINE/$CANAL/Nextcloud-Talk-Teams-installateur.exe"
 
 echo "3/4 Mise à jour de l'index (rend la version visible aux PC)…"
 printf '%s %s %s' "$EMPREINTE" "$NOM_PAQUET" "$TAILLE" > "$DEST/.RELEASES.tmp"
