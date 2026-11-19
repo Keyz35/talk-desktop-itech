@@ -1,5 +1,5 @@
 #!/bin/bash
-# Compile la version personnalisée de Talk Desktop (« Nextcloud Talk Teams » : bouton et téléphone intégré) pour Windows x64.
+# Compile la version personnalisée de Talk Desktop (« Hoalen Talk Teams » : bouton et téléphone intégré) pour Windows x64.
 #   ./construire.sh                -> Talk Desktop v2.3.5, révision iTech 1 (version 2.3.501)
 #   ./construire.sh v2.3.6 2       -> Talk Desktop v2.3.6, révision iTech 2 (version 2.3.602)
 # Numéro de version iTech = X.Y.(Z×100 + révision) : toujours croissant, ce qui permet aux PC
@@ -36,7 +36,7 @@ if [ -d "$APPLI" ]; then
   cp "$APPLI/js/telephone-noyau.js" "$APPLI/js/jssip.min.js" "$APPLI/js/jssip.LICENCE.md" "$APPLI/css/telephone.css" "$ICI/client/"
   mkdir -p "$ICI/client/fonts" "$ICI/client/charte"
   cp "$APPLI"/fonts/* "$ICI/client/fonts/"
-  cp "$APPLI/../../charte-hoalen/charte-talk-desktop.css" "$APPLI"/../../charte-hoalen/icone-hoalen*.svg "$ICI/client/charte/"
+  cp "$APPLI/../../charte-hoalen/charte-talk-desktop.css" "$APPLI"/../../charte-hoalen/icone-hoalen*.svg "$APPLI/../../charte-hoalen/logo-chargement.svg" "$ICI/client/charte/"
 fi
 for f in telephone-noyau.js jssip.min.js telephone.css fonts/outfit-latin-400-normal.woff2 charte/charte-talk-desktop.css charte/icone-hoalen.svg; do
   [ -f "$ICI/client/$f" ] || { echo "ÉCHEC : client/$f manquant" >&2; exit 1; }
@@ -55,6 +55,8 @@ cp "$ICI/client/charte/icone-hoalen.svg" "$TRAVAIL/img/talk-icon-mac-shadow.svg"
 cp "$ICI/client/charte/icone-hoalen-trait-clair.svg" "$TRAVAIL/img/talk-icon-plain-light.svg"
 cp "$ICI/client/charte/icone-hoalen-trait-clair.svg" "$TRAVAIL/img/talk-icon-plain-spaced-light.svg"
 cp "$ICI/client/charte/icone-hoalen-trait-sombre.svg" "$TRAVAIL/img/talk-icon-plain-spaced-dark.svg"
+# Fenêtre de chargement : « O » + « Hoalen Talk Teams » à la place du logo Nextcloud Talk.
+cp "$ICI/client/charte/logo-chargement.svg" "$TRAVAIL/img/talk-logo.svg"
 python3 -I "$ICI/integration/modifier-talk-desktop.py" "$TRAVAIL"
 python3 -I - "$TRAVAIL/package.json" "$VERSION_ITECH" <<'PY2'
 import json, sys
@@ -94,7 +96,7 @@ DOSSIER_APPLI="$(find "$TRAVAIL/out" -maxdepth 1 -type d -name "$NOM-win32-x64" 
 [ -n "$DOSSIER_APPLI" ] || { echo "ÉCHEC : dossier compilé introuvable dans out/" >&2; exit 1; }
 # Contrôle : nos ajouts doivent être dans l'application compilée, sinon on n'en livre rien.
 ASAR="$DOSSIER_APPLI/resources/app.asar"
-for repere in "Outfit Hoalen" "--color-primary-element: #6b6862" "#F0EDE4" tel3cx-panneau Telephone3CX apps/telephone3cx/api/v1 JsSIP demarrerMisesAJourItech maj-talk.itech.ovh 'isBranded:!0' "\"$VERSION_ITECH\""; do
+for repere in "Hoalen Talk Teams" "hoalen-windows-x64" "Outfit Hoalen" "--color-primary-element: #6b6862" "#F0EDE4" tel3cx-panneau Telephone3CX apps/telephone3cx/api/v1 JsSIP demarrerMisesAJourItech maj-talk.itech.ovh 'isBranded:!0' "\"$VERSION_ITECH\""; do
   grep -a -q -F -- "$repere" "$ASAR" || { echo "ÉCHEC du contrôle : « $repere » absent de l'application compilée" >&2; exit 1; }
 done
 echo "Contrôle : bouton, téléphone intégré, mises à jour iTech, personnalisation et version $VERSION_ITECH présents."

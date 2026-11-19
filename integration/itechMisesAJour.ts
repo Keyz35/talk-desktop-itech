@@ -4,7 +4,7 @@
  * La version personnalisée coupe la vérification officielle (GitHub de Nextcloud) : ce module
  * la remplace par notre propre serveur de mises à jour, au format Squirrel.Windows.
  *   - Canal « stable » par défaut ; canal « test » si le fichier
- *     %APPDATA%\Nextcloud Talk Teams\canal-mises-a-jour.txt contient « test ».
+ *     %APPDATA%\Hoalen Talk Teams\canal-mises-a-jour.txt contient « test ».
  *   - Ne fonctionne que pour une installation par l'installateur (.exe), pas pour le zip portable.
  *   - Vérifie 2 min après le démarrage puis toutes les 6 h ; la nouvelle version est téléchargée
  *     en arrière-plan et s'installe au prochain démarrage de l'application (jamais pendant un appel).
@@ -32,7 +32,9 @@ export function demarrerMisesAJourItech() {
 	if (!isSquirrel) {
 		return
 	}
-	const url = `${SERVEUR_MISES_A_JOUR}/${canal()}/windows-x64`
+	// « hoalen-windows-x64 » : canal propre à « Hoalen Talk Teams » (l'ancienne « Nextcloud Talk Teams »
+	// garde le sien, figé en 2.3.507, pour éviter toute mise à jour croisée entre les deux applications).
+	const url = `${SERVEUR_MISES_A_JOUR}/${canal()}/hoalen-windows-x64`
 	try {
 		autoUpdater.setFeedURL({ url })
 	} catch (erreur) {

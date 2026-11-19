@@ -1,4 +1,4 @@
-# Talk Desktop iTech — « Nextcloud Talk Teams »
+# Talk Desktop iTech — « Hoalen Talk Teams »
 
 Version personnalisée de [Nextcloud Talk Desktop](https://github.com/nextcloud/talk-desktop)
 (Windows x64) pour les cabinets suivis par iTech : Talk y devient **le téléphone** du collaborateur.
@@ -11,7 +11,7 @@ important du code officiel arrête la compilation au lieu de produire une versio
 
 | Ajout | Fichiers |
 |---|---|
-| Personnalisation officielle : nom « Nextcloud Talk Teams », serveur cloud.itech.ovh prérempli, vérification de mise à jour Nextcloud coupée | `build.config.json` (copié en `.overrides/`) |
+| Personnalisation officielle : nom « Hoalen Talk Teams », serveur cloud.itech.ovh prérempli, vérification de mise à jour Nextcloud coupée | `build.config.json` (copié en `.overrides/`) |
 | Bouton **Téléphone** dans la barre de titre | `integration/modifier-talk-desktop.py` (TitleBar.vue), `integration/Telephone3CX.ts` |
 | Téléphone intégré SIP WebRTC (JsSIP) : appels sortants et entrants, sonnerie, notification, micro, attente, touches | `client/` — copie de l'appli Nextcloud `telephone3cx` (serveur mailcow-nextcloud, `docker-stack/talk-3cx/appli/`) |
 | Mises à jour automatiques depuis **maj-talk.itech.ovh** (canaux stable/test) | `integration/itechMisesAJour.ts` + 2 lignes dans `src/main.js` |
@@ -53,9 +53,9 @@ Retour arrière : `./publier.sh stable <version précédente>` (la précédente 
 ## Côté PC
 
 - **Installateur** (`…-installateur.exe`) : installation par utilisateur, mises à jour automatiques.
-  Dernier installateur : https://maj-talk.itech.ovh/stable/Nextcloud-Talk-Teams-installateur.exe
+  Dernier installateur : https://maj-talk.itech.ovh/stable/Hoalen-Talk-Teams-installateur.exe
 - **Zip portable** : pour un essai ; **pas** de mise à jour automatique.
-- **Canal test** sur un PC : créer `%APPDATA%\Nextcloud Talk Teams\canal-mises-a-jour.txt`
+- **Canal test** sur un PC : créer `%APPDATA%\Hoalen Talk Teams\canal-mises-a-jour.txt`
   contenant `test`, puis redémarrer l'appli.
 - Exécutable non signé : avertissement SmartScreen au premier lancement.
 - Pour recevoir les appels, l'appli doit tourner (fermer la fenêtre la garde dans la zone de

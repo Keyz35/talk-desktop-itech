@@ -3,8 +3,8 @@
 #   ./publier.sh test   2.3.601    -> canal « test » (PC dont canal-mises-a-jour.txt contient « test »)
 #   ./publier.sh stable 2.3.601    -> canal « stable » (tous les PC)
 # Les PC installés par l'installateur vérifient toutes les 6 h et installent au redémarrage suivant.
-# Fichiers servis par le conteneur maj-talk : /srv/maj-talk/<canal>/windows-x64/{RELEASES,*.nupkg}
-# et le dernier installateur : /srv/maj-talk/<canal>/Nextcloud-Talk-Teams-installateur.exe
+# Fichiers servis par le conteneur maj-talk : /srv/maj-talk/<canal>/hoalen-windows-x64/{RELEASES,*.nupkg}
+# et le dernier installateur : /srv/maj-talk/<canal>/Hoalen-Talk-Teams-installateur.exe
 set -euo pipefail
 
 CANAL="${1:-}"
@@ -15,7 +15,7 @@ VERSION="${2:-}"
 ICI="$(cd "$(dirname "$0")" && pwd)"
 SOURCE="$ICI/sortie/squirrel-$VERSION"
 RACINE=/srv/maj-talk
-DEST="$RACINE/$CANAL/windows-x64"
+DEST="$RACINE/$CANAL/hoalen-windows-x64"   # canal de « Hoalen Talk Teams » (l'ancien windows-x64 reste figé en 2.3.507)
 ETAT="$ICI/etat-publication.json"
 
 echo "1/4 Vérification de la version $VERSION…"
@@ -34,7 +34,7 @@ read -r EMPREINTE NOM_PAQUET TAILLE < <(sed 's/^\xEF\xBB\xBF//' "$INDEX") || tru
 echo "2/4 Copie du paquet sur le canal « $CANAL »…"
 mkdir -p "$DEST"
 cp "$PAQUET_SRC" "$DEST/.$NOM_PAQUET.tmp" && mv "$DEST/.$NOM_PAQUET.tmp" "$DEST/$NOM_PAQUET"
-cp "$INSTALLATEUR" "$RACINE/$CANAL/.installateur.tmp" && mv "$RACINE/$CANAL/.installateur.tmp" "$RACINE/$CANAL/Nextcloud-Talk-Teams-installateur.exe"
+cp "$INSTALLATEUR" "$RACINE/$CANAL/.installateur.tmp" && mv "$RACINE/$CANAL/.installateur.tmp" "$RACINE/$CANAL/Hoalen-Talk-Teams-installateur.exe"
 
 # Icône affichée par Windows dans « Applications installées » (iconUrl de l'installateur).
 ICO="$ICI/.travail/talk-desktop-v$(python3 -I -c 'import sys; a,b,c=sys.argv[1].split("."); print(f"{a}.{b}.{int(c)//100}")' "$VERSION")/img/icons/icon.ico"
