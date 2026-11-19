@@ -75,3 +75,26 @@ if "demarrerMisesAJourItech" not in texte:
         texte = texte.replace(ancien, nouveau)
     main.write_text(texte, encoding="utf-8")
     print("main.js : mises à jour iTech branchées")
+
+# 5. Icône affichée par Windows dans « Applications installées » : la nôtre (publiée par publier.sh)
+forge = racine / "forge.config.js"
+texte = forge.read_text(encoding="utf-8")
+ancien = "iconUrl: 'https://raw.githubusercontent.com/nextcloud/talk-desktop/refs/heads/main/img/icons/icon.ico',"
+nouveau = "iconUrl: 'https://maj-talk.itech.ovh/icone.ico', // ajout iTech : icône Hoalen"
+if nouveau not in texte:
+    if texte.count(ancien) != 1:
+        sys.exit("ÉCHEC : iconUrl introuvable ou ambigu dans forge.config.js")
+    forge.write_text(texte.replace(ancien, nouveau), encoding="utf-8")
+    print("forge.config.js : icône Windows remplacée")
+
+# 6. Boutons système de la fenêtre (réduire, agrandir, fermer) : couleur calculée d'après le fond de
+#    l'en-tête déclaré à la compilation ; notre en-tête est sable (#F0EDE4) -> symboles foncés.
+utils = racine / "src/app/utils.ts"
+texte = utils.read_text(encoding="utf-8")
+ancien = "export function getTitleBarSymbolColor(backgroundColor: string = BUILD_CONFIG.backgroundColor): string {"
+nouveau = "export function getTitleBarSymbolColor(backgroundColor: string = '#F0EDE4' /* ajout iTech : en-tête sable Hoalen */): string {"
+if nouveau not in texte:
+    if texte.count(ancien) != 1:
+        sys.exit("ÉCHEC : getTitleBarSymbolColor introuvable ou ambigu dans src/app/utils.ts")
+    utils.write_text(texte.replace(ancien, nouveau), encoding="utf-8")
+    print("utils.ts : boutons système foncés pour l'en-tête sable")

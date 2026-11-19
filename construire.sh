@@ -34,8 +34,11 @@ echo "3/6 Ajout du bouton Téléphone…"
 mkdir -p "$ICI/client"
 if [ -d "$APPLI" ]; then
   cp "$APPLI/js/telephone-noyau.js" "$APPLI/js/jssip.min.js" "$APPLI/js/jssip.LICENCE.md" "$APPLI/css/telephone.css" "$ICI/client/"
+  mkdir -p "$ICI/client/fonts" "$ICI/client/charte"
+  cp "$APPLI"/fonts/* "$ICI/client/fonts/"
+  cp "$APPLI/../../charte-hoalen/charte-talk-desktop.css" "$APPLI"/../../charte-hoalen/icone-hoalen*.svg "$ICI/client/charte/"
 fi
-for f in telephone-noyau.js jssip.min.js telephone.css; do
+for f in telephone-noyau.js jssip.min.js telephone.css fonts/outfit-latin-400-normal.woff2 charte/charte-talk-desktop.css charte/icone-hoalen.svg; do
   [ -f "$ICI/client/$f" ] || { echo "ÉCHEC : client/$f manquant" >&2; exit 1; }
 done
 DEST="$TRAVAIL/src/talk/renderer/Telephone3CX"
@@ -43,6 +46,15 @@ mkdir -p "$DEST"
 cp "$ICI/integration/Telephone3CX.ts" "$DEST/"
 cp "$ICI/integration/itechMisesAJour.ts" "$TRAVAIL/src/app/"
 cp "$ICI/client/telephone-noyau.js" "$ICI/client/jssip.min.js" "$ICI/client/telephone.css" "$DEST/"
+cp "$ICI/client/charte/charte-talk-desktop.css" "$DEST/"
+mkdir -p "$TRAVAIL/src/talk/renderer/fonts" && cp "$ICI"/client/fonts/*.woff2 "$TRAVAIL/src/talk/renderer/fonts/"
+# Icône « O » de Hoalen à la place de l'icône Talk (déclinée ensuite par scripts/generate-icons.js).
+cp "$ICI/client/charte/icone-hoalen.svg" "$TRAVAIL/img/talk-icon-rounded.svg"
+cp "$ICI/client/charte/icone-hoalen.svg" "$TRAVAIL/img/talk-icon-rounded-spaced.svg"
+cp "$ICI/client/charte/icone-hoalen.svg" "$TRAVAIL/img/talk-icon-mac-shadow.svg"
+cp "$ICI/client/charte/icone-hoalen-trait-clair.svg" "$TRAVAIL/img/talk-icon-plain-light.svg"
+cp "$ICI/client/charte/icone-hoalen-trait-clair.svg" "$TRAVAIL/img/talk-icon-plain-spaced-light.svg"
+cp "$ICI/client/charte/icone-hoalen-trait-sombre.svg" "$TRAVAIL/img/talk-icon-plain-spaced-dark.svg"
 python3 -I "$ICI/integration/modifier-talk-desktop.py" "$TRAVAIL"
 python3 -I - "$TRAVAIL/package.json" "$VERSION_ITECH" <<'PY2'
 import json, sys
@@ -71,6 +83,7 @@ docker run --rm --cpus=1 --memory=3g --memory-swap=3g \
   "$IMAGE" nice -n 10 bash -c '
     set -e
     npm ci --no-audit --no-fund
+    npm run generate-icons
     npm run build:windows:x64
     npm run package:windows:x64:exe
   '
@@ -81,7 +94,7 @@ DOSSIER_APPLI="$(find "$TRAVAIL/out" -maxdepth 1 -type d -name "$NOM-win32-x64" 
 [ -n "$DOSSIER_APPLI" ] || { echo "ÉCHEC : dossier compilé introuvable dans out/" >&2; exit 1; }
 # Contrôle : nos ajouts doivent être dans l'application compilée, sinon on n'en livre rien.
 ASAR="$DOSSIER_APPLI/resources/app.asar"
-for repere in tel3cx-panneau Telephone3CX apps/telephone3cx/api/v1 JsSIP demarrerMisesAJourItech maj-talk.itech.ovh 'isBranded:!0' "\"$VERSION_ITECH\""; do
+for repere in "Outfit Hoalen" "--color-primary-element: #067573" "#F0EDE4" tel3cx-panneau Telephone3CX apps/telephone3cx/api/v1 JsSIP demarrerMisesAJourItech maj-talk.itech.ovh 'isBranded:!0' "\"$VERSION_ITECH\""; do
   grep -a -q -F -- "$repere" "$ASAR" || { echo "ÉCHEC du contrôle : « $repere » absent de l'application compilée" >&2; exit 1; }
 done
 echo "Contrôle : bouton, téléphone intégré, mises à jour iTech, personnalisation et version $VERSION_ITECH présents."

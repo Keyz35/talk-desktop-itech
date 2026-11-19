@@ -10,6 +10,8 @@ import { generateOcsUrl } from '@nextcloud/router'
 import './jssip.min.js'
 import './telephone-noyau.js'
 import './telephone.css'
+// Charte Hoalen : couleurs de toute l'interface (générées depuis le serveur personnalisé)
+import './charte-talk-desktop.css'
 
 type Reponse = { ok: boolean, statut?: number, message?: string, [cle: string]: unknown }
 

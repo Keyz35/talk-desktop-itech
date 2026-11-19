@@ -36,6 +36,9 @@ mkdir -p "$DEST"
 cp "$PAQUET_SRC" "$DEST/.$NOM_PAQUET.tmp" && mv "$DEST/.$NOM_PAQUET.tmp" "$DEST/$NOM_PAQUET"
 cp "$INSTALLATEUR" "$RACINE/$CANAL/.installateur.tmp" && mv "$RACINE/$CANAL/.installateur.tmp" "$RACINE/$CANAL/Nextcloud-Talk-Teams-installateur.exe"
 
+# Icône affichée par Windows dans « Applications installées » (iconUrl de l'installateur).
+ICO="$ICI/.travail/talk-desktop-v$(python3 -I -c 'import sys; a,b,c=sys.argv[1].split("."); print(f"{a}.{b}.{int(c)//100}")' "$VERSION")/img/icons/icon.ico"
+[ -f "$ICO" ] && cp "$ICO" "$RACINE/icone.ico"
 echo "3/4 Mise à jour de l'index (rend la version visible aux PC)…"
 printf '%s %s %s' "$EMPREINTE" "$NOM_PAQUET" "$TAILLE" > "$DEST/.RELEASES.tmp"
 mv "$DEST/.RELEASES.tmp" "$DEST/RELEASES"

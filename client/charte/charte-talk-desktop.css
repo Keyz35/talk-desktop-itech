@@ -1,0 +1,81 @@
+/* Charte Hoalen Avocats pour Talk Desktop : variables de couleur de Nextcloud recalculées par le
+ * serveur cloud.itech.ovh personnalisé (couleur principale et fond #021216, bleu nuit du logo).
+ * Fichier GÉNÉRÉ par charte-hoalen/generer-css-desktop.py — ne pas modifier à la main. */
+
+:root,
+body,
+body[data-theme-light],
+body[data-theme-light-highcontrast] {
+	--background-invert-if-bright: invert(100%) !important;
+	--background-invert-if-dark: no !important;
+	--color-background-plain: #f0ede4 !important;
+	--color-background-plain-text: #000000 !important;
+	--color-primary: #067573 !important;
+	--color-primary-element: #067573 !important;
+	--color-primary-element-hover: #045352 !important;
+	--color-primary-element-light: var(--color-primary-light) !important;
+	--color-primary-element-light-hover: var(--color-primary-light-hover) !important;
+	--color-primary-element-light-text: var(--color-primary-light-text) !important;
+	--color-primary-element-text: #ffffff !important;
+	--color-primary-element-text-dark: #ededed !important;
+	--color-primary-hover: #37908f !important;
+	--color-primary-light: #e6f1f1 !important;
+	--color-primary-light-hover: #dae4e4 !important;
+	--color-primary-light-text: #022e2e !important;
+	--color-primary-text: #ffffff !important;
+	--gradient-primary-background: linear-gradient(40deg, var(--color-primary) 0%, var(--color-primary-hover) 100%) !important;
+	--image-background: none !important;
+	--primary-invert-if-bright: no !important;
+	--primary-invert-if-dark: invert(100%) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+	body:not([data-theme-light]):not([data-theme-light-highcontrast]) {
+		--background-invert-if-bright: no !important;
+		--background-invert-if-dark: invert(100%) !important;
+		--color-background-plain: #f0ede4 !important;
+		--color-background-plain-text: #000000 !important;
+		--color-primary: #067573 !important;
+		--color-primary-element: #069d9b !important;
+		--color-primary-element-hover: #07bfbd !important;
+		--color-primary-element-light: var(--color-primary-light) !important;
+		--color-primary-element-light-hover: var(--color-primary-light-hover) !important;
+		--color-primary-element-light-text: var(--color-primary-light-text) !important;
+		--color-primary-element-text: #000000 !important;
+		--color-primary-element-text-dark: #121212 !important;
+		--color-primary-hover: #096260 !important;
+		--color-primary-light: #152424 !important;
+		--color-primary-light-hover: #202e2e !important;
+		--color-primary-light-text: #9bc7c7 !important;
+		--color-primary-text: #ffffff !important;
+		--gradient-primary-background: linear-gradient(40deg, var(--color-primary) 0%, var(--color-primary-hover) 100%) !important;
+		--image-background: none !important;
+		--primary-invert-if-bright: invert(100%) !important;
+		--primary-invert-if-dark: no !important;
+	}
+}
+
+body[data-theme-dark],
+body[data-theme-dark-highcontrast] {
+	--background-invert-if-bright: no !important;
+	--background-invert-if-dark: invert(100%) !important;
+	--color-background-plain: #f0ede4 !important;
+	--color-background-plain-text: #000000 !important;
+	--color-primary: #067573 !important;
+	--color-primary-element: #069d9b !important;
+	--color-primary-element-hover: #07bfbd !important;
+	--color-primary-element-light: var(--color-primary-light) !important;
+	--color-primary-element-light-hover: var(--color-primary-light-hover) !important;
+	--color-primary-element-light-text: var(--color-primary-light-text) !important;
+	--color-primary-element-text: #000000 !important;
+	--color-primary-element-text-dark: #121212 !important;
+	--color-primary-hover: #096260 !important;
+	--color-primary-light: #152424 !important;
+	--color-primary-light-hover: #202e2e !important;
+	--color-primary-light-text: #9bc7c7 !important;
+	--color-primary-text: #ffffff !important;
+	--gradient-primary-background: linear-gradient(40deg, var(--color-primary) 0%, var(--color-primary-hover) 100%) !important;
+	--image-background: none !important;
+	--primary-invert-if-bright: invert(100%) !important;
+	--primary-invert-if-dark: no !important;
+}

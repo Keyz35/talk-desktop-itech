@@ -563,3 +563,197 @@
 }
 .tel3cx-tableau button.tel3cx-puce:hover { border-color: #2d7b41; background: rgba(45, 123, 65, .1); }
 .tel3cx-puce-type { color: var(--color-text-maxcontrast); }
+
+/* ======================================================================================
+   Charte Hoalen Avocats (https://hoalen-avocats.com) — 19/11/2026
+   Encre #111110, bleu nuit #021216, crème #fbfaf8, sable #f0ede4 ; accents des 4 pôles :
+   corail #d96b5a, jaune #fbd469, vert #96c68d, turquoise #08aba8. Boutons en pilule.
+   Police : Outfit (licence libre OFL), proche de Filson Pro (police payante du site).
+   ====================================================================================== */
+
+@font-face {
+	font-family: 'Outfit Hoalen';
+	font-style: normal;
+	font-weight: 400;
+	font-display: swap;
+	src: url('../fonts/outfit-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+	font-family: 'Outfit Hoalen';
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url('../fonts/outfit-latin-600-normal.woff2') format('woff2');
+}
+
+.tel3cx-panneau, .tel3cx-tableau {
+	--tel3cx-encre: #111110;
+	--tel3cx-nuit: #021216;
+	--tel3cx-corail: #d96b5a;
+	--tel3cx-jaune: #fbd469;
+	--tel3cx-vert: #96c68d;
+	--tel3cx-turquoise: #08aba8;
+	--tel3cx-fond: #fbfaf8;
+	--tel3cx-fond-2: #f0ede4;
+	--tel3cx-texte: #111110;
+	--tel3cx-texte-2: #5b5a55;
+	--tel3cx-trait: #dcd8cc;
+	--tel3cx-trait-fort: #b0b0af;
+	font-family: 'Outfit Hoalen', var(--font-face, sans-serif);
+	color: var(--tel3cx-texte);
+}
+/* Thème sombre de Nextcloud / Talk : fonds de l'interface, accents inchangés. */
+body[data-theme-dark] .tel3cx-panneau, body[data-theme-dark] .tel3cx-tableau,
+body[data-theme-dark-highcontrast] .tel3cx-panneau, body[data-theme-dark-highcontrast] .tel3cx-tableau {
+	--tel3cx-fond: var(--color-main-background);
+	--tel3cx-fond-2: var(--color-background-dark);
+	--tel3cx-texte: var(--color-main-text);
+	--tel3cx-texte-2: var(--color-text-maxcontrast);
+	--tel3cx-trait: var(--color-border);
+	--tel3cx-trait-fort: var(--color-border-dark);
+}
+@media (prefers-color-scheme: dark) {
+	body:not([data-theme-light]):not([data-theme-light-highcontrast]) .tel3cx-panneau,
+	body:not([data-theme-light]):not([data-theme-light-highcontrast]) .tel3cx-tableau {
+		--tel3cx-fond: var(--color-main-background);
+		--tel3cx-fond-2: var(--color-background-dark);
+		--tel3cx-texte: var(--color-main-text);
+		--tel3cx-texte-2: var(--color-text-maxcontrast);
+		--tel3cx-trait: var(--color-border);
+		--tel3cx-trait-fort: var(--color-border-dark);
+	}
+}
+
+/* Panneau */
+.tel3cx-panneau { background: var(--tel3cx-fond); border: 1px solid var(--tel3cx-trait); border-radius: 18px; box-shadow: 0 12px 32px rgba(2, 18, 22, .16); }
+.tel3cx-titre { font-weight: 600; font-size: 1.2em; letter-spacing: .01em; }
+.tel3cx-poste { color: var(--tel3cx-texte-2); }
+.tel3cx-connecte::before { background: var(--tel3cx-turquoise); }
+.tel3cx-attention::before { background: var(--tel3cx-jaune); }
+
+.tel3cx-panneau .tel3cx-saisie input {
+	height: 46px;
+	border: 1px solid var(--tel3cx-trait-fort);
+	border-radius: 100px;
+	background: var(--tel3cx-fond);
+	color: var(--tel3cx-texte);
+	font-family: inherit;
+	font-size: 1.3em;
+	letter-spacing: .06em;
+}
+.tel3cx-panneau .tel3cx-saisie input:focus { border-color: var(--tel3cx-turquoise); box-shadow: 0 0 0 3px rgba(8, 171, 168, .18); }
+.tel3cx-panneau button.tel3cx-effacer { border-radius: 50%; background: transparent; color: var(--tel3cx-texte-2); }
+.tel3cx-panneau button.tel3cx-effacer:hover { background: var(--tel3cx-fond-2); color: var(--tel3cx-corail); }
+
+/* Pavé : touches rondes, trait fin, comme les pastilles du site */
+.tel3cx-panneau .tel3cx-clavier { gap: 10px 14px; justify-items: center; }
+.tel3cx-panneau .tel3cx-clavier button {
+	width: 64px;
+	height: 64px;
+	border: 1px solid var(--tel3cx-trait);
+	border-radius: 50%;
+	background: var(--tel3cx-fond);
+	color: var(--tel3cx-texte);
+	font-family: inherit;
+	transition: background .15s, border-color .15s;
+}
+.tel3cx-panneau .tel3cx-clavier button:hover { background: var(--tel3cx-fond-2); border-color: var(--tel3cx-trait-fort); }
+.tel3cx-panneau .tel3cx-chiffre { font-size: 1.45em; font-weight: 400; }
+.tel3cx-panneau .tel3cx-lettres { color: var(--tel3cx-texte-2); letter-spacing: .14em; }
+.tel3cx-panneau.tel3cx-dans-tableau .tel3cx-clavier button { width: 70px; height: 70px; }
+
+/* Boutons d'action : pilules en majuscules, comme les boutons du site */
+.tel3cx-panneau button.tel3cx-appeler, .tel3cx-panneau button.tel3cx-raccrocher {
+	height: 48px;
+	border-radius: 100px;
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 600;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+	transition: filter .15s, transform .1s;
+}
+.tel3cx-panneau button.tel3cx-appeler,
+.tel3cx-panneau button.tel3cx-appeler:disabled { background: var(--tel3cx-turquoise); color: #fff; }
+.tel3cx-panneau button.tel3cx-appeler:hover:not(:disabled) { filter: brightness(.92); }
+.tel3cx-panneau button.tel3cx-appeler:active:not(:disabled), .tel3cx-panneau button.tel3cx-raccrocher:active { transform: scale(.98); }
+.tel3cx-panneau button.tel3cx-raccrocher { background: var(--tel3cx-corail); color: #fff; }
+.tel3cx-panneau button.tel3cx-repondre { background: var(--tel3cx-turquoise); }
+.tel3cx-panneau button.tel3cx-refuser { background: var(--tel3cx-corail); }
+@keyframes tel3cx-pulse { 50% { box-shadow: 0 0 0 10px rgba(8, 171, 168, .22); } }
+
+/* Appel en cours */
+.tel3cx-appel { background: var(--tel3cx-fond-2); border-radius: 18px; }
+.tel3cx-appel-qui { font-weight: 600; font-size: 1.3em; }
+.tel3cx-panneau button.tel3cx-action { border: 1px solid var(--tel3cx-trait); border-radius: 100px; background: var(--tel3cx-fond); color: var(--tel3cx-texte); font-family: inherit; }
+.tel3cx-panneau button.tel3cx-action.tel3cx-actif { border-color: var(--tel3cx-encre); background: var(--tel3cx-encre); color: #fbfaf8; }
+
+/* Messages */
+.tel3cx-message { border-radius: 12px; }
+.tel3cx-succes { background: rgba(8, 171, 168, .12); color: var(--tel3cx-texte); border-left: 3px solid var(--tel3cx-turquoise); }
+.tel3cx-erreur { background: rgba(217, 107, 90, .12); color: var(--tel3cx-texte); border-left: 3px solid var(--tel3cx-corail); }
+.tel3cx-info { background: var(--tel3cx-fond-2); }
+
+/* Tableau de bord */
+.tel3cx-tableau { background: var(--tel3cx-fond); }
+.tel3cx-tableau .tel3cx-col + .tel3cx-col { border-color: var(--tel3cx-trait); }
+.tel3cx-tableau .tel3cx-col-centre { background: var(--tel3cx-fond-2); }
+.tel3cx-tableau h2 { font-family: inherit; font-weight: 600; font-size: 1.45em; letter-spacing: .01em; }
+.tel3cx-tableau h2::after { content: ''; display: block; width: 32px; height: 3px; margin-top: 6px; border-radius: 2px; background: var(--tel3cx-turquoise); }
+.tel3cx-tableau .tel3cx-col-recents h2::after { background: var(--tel3cx-corail); }
+.tel3cx-tableau input.tel3cx-filtre-contacts {
+	height: 42px;
+	border: 1px solid var(--tel3cx-trait-fort);
+	border-radius: 100px;
+	padding: 0 16px;
+	background: var(--tel3cx-fond);
+	color: var(--tel3cx-texte);
+	font-family: inherit;
+}
+.tel3cx-tableau input.tel3cx-filtre-contacts:focus { border-color: var(--tel3cx-turquoise); box-shadow: 0 0 0 3px rgba(8, 171, 168, .18); }
+.tel3cx-section { background: var(--tel3cx-fond); color: var(--tel3cx-texte-2); letter-spacing: .1em; }
+.tel3cx-section::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 8px; border-radius: 50%; background: var(--tel3cx-turquoise); vertical-align: middle; }
+.tel3cx-section ~ .tel3cx-section::before { background: var(--tel3cx-corail); }
+.tel3cx-contact:hover, .tel3cx-recent:hover, .tel3cx-contact:focus-visible, .tel3cx-recent:focus-visible { background: var(--tel3cx-fond-2); }
+.tel3cx-contact-texte .tel3cx-num { color: var(--tel3cx-texte-2); }
+.tel3cx-dispo { background: var(--tel3cx-turquoise); }
+.tel3cx-absent { background: var(--tel3cx-trait-fort); }
+.tel3cx-presence { box-shadow: 0 0 0 2px var(--tel3cx-fond); }
+.tel3cx-tableau button.tel3cx-appel-rapide { color: var(--tel3cx-turquoise); }
+.tel3cx-tableau button.tel3cx-appel-rapide:hover { background: rgba(8, 171, 168, .14); }
+.tel3cx-tableau button.tel3cx-puce { border-color: var(--tel3cx-trait); border-radius: 100px; background: var(--tel3cx-fond); color: var(--tel3cx-texte); font-family: inherit; }
+.tel3cx-tableau button.tel3cx-puce:hover { border-color: var(--tel3cx-turquoise); background: rgba(8, 171, 168, .1); }
+.tel3cx-puce-type { color: var(--tel3cx-texte-2); }
+
+/* Onglets Tous / Manqués : pilules en contour, comme les boutons du site */
+.tel3cx-tableau .tel3cx-onglets button {
+	padding: 6px 18px;
+	border: 1px solid var(--tel3cx-trait-fort);
+	border-radius: 100px;
+	background: transparent;
+	color: var(--tel3cx-texte);
+	font-family: inherit;
+	font-size: 13px;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+}
+.tel3cx-tableau .tel3cx-onglets button:hover { border-color: var(--tel3cx-encre); }
+.tel3cx-tableau .tel3cx-onglets button[aria-selected="true"] { border-color: var(--tel3cx-encre); background: var(--tel3cx-encre); color: #fbfaf8; }
+body[data-theme-dark] .tel3cx-tableau .tel3cx-onglets button[aria-selected="true"] { border-color: var(--tel3cx-turquoise); background: var(--tel3cx-turquoise); }
+
+.tel3cx-recents button.tel3cx-manque .tel3cx-nom,
+.tel3cx-recent.tel3cx-manque .tel3cx-nom,
+.tel3cx-recent.tel3cx-manque .tel3cx-sens { color: var(--tel3cx-corail); }
+.tel3cx-note { color: var(--tel3cx-texte-2); }
+
+/* En-tête clair (sable) ou foncé : survol et pastille calculés d'après la couleur de texte de l'en-tête. */
+.tel3cx-entete button.tel3cx-bouton-entete:not(:disabled):hover,
+.tel3cx-entete button.tel3cx-bouton-entete:focus-visible,
+.tel3cx-entete button.tel3cx-bouton-entete[aria-expanded="true"],
+.tel3cx-entete button.tel3cx-bouton-entete[aria-pressed="true"] {
+	background: color-mix(in srgb, var(--color-background-plain-text, #fff) 12%, transparent);
+}
+.tel3cx-entete button.tel3cx-bouton-entete.tel3cx-en-ligne { background: rgba(8, 171, 168, .35); }
+.tel3cx-entete .tel3cx-pastille { box-shadow: 0 0 0 2px var(--color-background-plain, #00679e); }
+.tel3cx-pastille.tel3cx-pret { background: #08aba8; }
+.tel3cx-pastille.tel3cx-hors { background: #e0a91c; }

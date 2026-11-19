@@ -704,11 +704,18 @@
 			return ((mots[0] || '?')[0] + (mots.length > 1 ? mots[mots.length - 1][0] : '')).toUpperCase()
 		}
 
-		function couleur(texte) {
+		// Couleurs des 4 pôles de la charte Hoalen (corail, jaune, vert, turquoise) + encre.
+		const PALETTE = [
+			{ fond: '#d96b5a', texte: '#ffffff' }, { fond: '#fbd469', texte: '#111110' },
+			{ fond: '#96c68d', texte: '#111110' }, { fond: '#08aba8', texte: '#ffffff' },
+			{ fond: '#021216', texte: '#fbfaf8' },
+		]
+		function teinte(texte) {
 			let h = 0
-			for (const c of texte || '') h = (h * 31 + c.charCodeAt(0)) % 360
-			return `hsl(${h}, 45%, 45%)`
+			for (const c of texte || '') h = (h * 31 + c.charCodeAt(0)) % 9973
+			return PALETTE[h % PALETTE.length]
 		}
+		const couleur = (texte) => teinte(texte).fond
 
 		/** Appel immédiat (depuis un contact ou un récent). */
 		function appelerDirect(numero, libelle) {
@@ -749,6 +756,7 @@
 			const avatar = document.createElement('span')
 			avatar.className = 'tel3cx-avatar'
 			avatar.style.background = couleur(c.nom)
+			avatar.style.color = teinte(c.nom).texte
 			avatar.textContent = initiales(c.nom)
 			const presence = document.createElement('span')
 			presence.className = 'tel3cx-presence ' + (c.enregistre ? 'tel3cx-dispo' : 'tel3cx-absent')
@@ -773,6 +781,7 @@
 			const avatar = document.createElement('span')
 			avatar.className = 'tel3cx-avatar tel3cx-avatar-perso'
 			avatar.style.background = couleur(c.nom)
+			avatar.style.color = teinte(c.nom).texte
 			avatar.textContent = initiales(c.nom)
 			const texte = document.createElement('span')
 			texte.className = 'tel3cx-contact-texte'

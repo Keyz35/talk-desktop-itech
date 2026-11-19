@@ -6,5 +6,8 @@
 	"windowsMsi": false,
 	"macosDmg": false,
 	"linuxFlatpak": false,
-	"linuxZip": false
+	"linuxZip": false,
+	"brandColor": "#067573",
+	"brandGradient": "linear-gradient(40deg, #067573 0%, #08aba8 100%)",
+	"brandFontColor": "#FFFFFF"
 }
