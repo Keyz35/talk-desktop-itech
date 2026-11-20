@@ -589,6 +589,7 @@
 				}
 				etat.transfertAccepte = false
 				etat.transfertOuvert = false
+				etat.departConference = false
 				const etaitEtabli = !!etat.debutAppel
 				const sens = etat.sens
 				if (etaitEtabli) signalerEnCommunication(false)
@@ -711,6 +712,13 @@
 
 		function raccrocher() {
 			if (!etat.session) return
+			// Conférence à trois : en partant, on met les deux autres en relation (ils continuent sans nous).
+			if (etat.conference && etat.consult && etat.consultEtablie && !etat.departConference) {
+				etat.departConference = true
+				terminerTransfert({ depart: true })
+				return
+			}
+			etat.departConference = false
 			if (etat.consult) { try { etat.consult.terminate() } catch (e) { /* déjà fini */ } }
 			try {
 				if (etat.sens === 'entrant' && !etat.debutAppel) {
@@ -836,24 +844,43 @@
 			majBouton()
 		}
 
-		function terminerTransfert() {
+		/** Met les deux correspondants en relation et nous retire (REFER + Replaces).
+		 *  depart = true : on quitte une conférence à trois ; en cas d'échec, on raccroche tout. */
+		function terminerTransfert(options) {
+			const depart = !!(options && options.depart)
 			const a = etat.session
 			const b = etat.consult
-			if (!a || !b) return
+			if (!a || !b) { etat.departConference = false; return }
+			let fini = false
+			const echec = () => {
+				if (fini) return
+				fini = true
+				if (depart) {
+					afficherMessage('Vos deux correspondants n\'ont pas pu rester en relation : la conférence est terminée.', 'erreur')
+					raccrocher()
+				} else {
+					afficherMessage('Le transfert a échoué : utilisez « Revenir » ou « Conférence à trois ».', 'erreur')
+				}
+			}
 			try {
 				const r = a.refer(b.remote_identity.uri, { replaces: b })
-				afficherMessage(`Mise en relation avec ${etat.correspondantConsult}…`, 'info')
+				afficherMessage(depart ? 'Vous quittez la conférence…' : `Mise en relation avec ${etat.correspondantConsult}…`, 'info')
+				majZoneAppel(depart ? 'Départ de la conférence…' : 'Mise en relation…')
 				r.on('accepted', () => {
+					if (fini) return
+					fini = true
 					etat.transfertAccepte = true
-					afficherMessage('Transfert effectué : vos deux correspondants sont en relation.', 'succes')
+					afficherMessage(depart
+						? 'Vous avez quitté la conférence : vos deux correspondants restent en ligne.'
+						: 'Transfert effectué : vos deux correspondants sont en relation.', 'succes')
 					setTimeout(() => {
 						for (const s2 of [b, a]) { try { s2.terminate() } catch (e) { /* déjà fini */ } }
 					}, 2000)
 				})
-				const echec = () => afficherMessage('Le transfert a échoué : utilisez « Revenir » ou « Conférence à trois ».', 'erreur')
 				r.on('requestFailed', echec)
 				r.on('failed', echec)
 			} catch (e) {
+				if (depart) { echec(); return }
 				afficherMessage('Transfert impossible : ' + (e && e.message ? e.message : 'erreur'), 'erreur')
 			}
 		}
