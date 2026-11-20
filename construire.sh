@@ -106,7 +106,7 @@ DOSSIER_APPLI="$(find "$TRAVAIL/out" -maxdepth 1 -type d -name "$NOM-win32-x64" 
 [ -n "$DOSSIER_APPLI" ] || { echo "ÉCHEC : dossier compilé introuvable dans out/" >&2; exit 1; }
 # Contrôle : nos ajouts doivent être dans l'application compilée, sinon on n'en livre rien.
 ASAR="$DOSSIER_APPLI/resources/app.asar"
-for repere in "itech:tel:enAttente" "itech-demarrage-automatique-v1" "itech-cache-avatars-v1" "Quitter" "Hoalen Talk Teams" "hoalen-windows-x64" "Outfit Hoalen" "--color-primary-element: #6b6862" "#F0EDE4" tel3cx-panneau Telephone3CX apps/telephone3cx/api/v1 JsSIP demarrerMisesAJourItech maj-talk.itech.ovh 'isBranded:!0' "\"$VERSION_ITECH\""; do
+for repere in "tel3cx-transfert-champ" "demarrerConference" "itech:tel:enAttente" "itech-demarrage-automatique-v1" "itech-cache-avatars-v1" "Quitter" "Hoalen Talk Teams" "hoalen-windows-x64" "Outfit Hoalen" "--color-primary-element: #6b6862" "#F0EDE4" tel3cx-panneau Telephone3CX apps/telephone3cx/api/v1 JsSIP demarrerMisesAJourItech maj-talk.itech.ovh 'isBranded:!0' "\"$VERSION_ITECH\""; do
   grep -a -q -F -- "$repere" "$ASAR" || { echo "ÉCHEC du contrôle : « $repere » absent de l'application compilée" >&2; exit 1; }
 done
 echo "Contrôle : bouton, téléphone intégré, mises à jour iTech, personnalisation et version $VERSION_ITECH présents."

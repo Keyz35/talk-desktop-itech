@@ -135,6 +135,9 @@
 		const audioDistant = document.createElement('audio')
 		audioDistant.autoplay = true
 		audioDistant.hidden = true
+		const audioConsult = document.createElement('audio')  // second appel (transfert après annonce, conférence)
+		audioConsult.autoplay = true
+		audioConsult.hidden = true
 
 		const panneau = document.createElement('div')
 		panneau.className = 'tel3cx-panneau'
@@ -158,6 +161,23 @@
 					<button type="button" class="tel3cx-action tel3cx-micro" title="Couper le micro">${icone('micro', 20)}<span>Micro</span></button>
 					<button type="button" class="tel3cx-action tel3cx-attente" title="Mettre en attente">${icone('attente', 20)}<span>Attente</span></button>
 					<button type="button" class="tel3cx-action tel3cx-montrer-clavier" title="Clavier (menus vocaux)">${icone('clavier', 20)}<span>Clavier</span></button>
+					<button type="button" class="tel3cx-action tel3cx-montrer-transfert" title="Transférer l'appel ou ajouter une personne">${icone('tel', 20)}<span>Transférer / Ajouter</span></button>
+				</div>
+				<div class="tel3cx-appel-second" hidden></div>
+				<div class="tel3cx-transfert" hidden>
+					<input type="text" class="tel3cx-transfert-champ" autocomplete="off" spellcheck="false"
+						placeholder="Numéro, poste ou nom" aria-label="Destinataire du transfert">
+					<div class="tel3cx-transfert-cible" aria-live="polite"></div>
+					<div class="tel3cx-transfert-boutons">
+						<button type="button" data-transfert="direct" title="Le correspondant est envoyé tout de suite au destinataire">Transférer</button>
+						<button type="button" data-transfert="annonce" title="Votre correspondant patiente ; vous parlez d'abord au destinataire">Appeler d'abord</button>
+						<button type="button" data-transfert="ajouter" title="Appeler la personne et l'ajouter à la conversation">Ajouter à l'appel</button>
+					</div>
+				</div>
+				<div class="tel3cx-consultation" hidden>
+					<button type="button" data-consultation="terminer">Terminer le transfert</button>
+					<button type="button" data-consultation="conference">Conférence à trois</button>
+					<button type="button" data-consultation="revenir">Revenir</button>
 				</div>
 			</div>
 			<div class="tel3cx-saisie">
@@ -178,7 +198,7 @@
 			</div>`
 
 		const $ = (s) => panneau.querySelector(s)
-		const champ = $('input')
+		const champ = $('.tel3cx-saisie input')  // champ du numéro (et non celui du transfert, placé avant)
 		const message = $('.tel3cx-message')
 		const suggestions = $('.tel3cx-suggestions')
 		const boutonAppeler = $('.tel3cx-appeler')
@@ -227,6 +247,19 @@
 			$('.tel3cx-micro').innerHTML = icone(etat.micCoupe ? 'microCoupe' : 'micro', 20) + '<span>' + (etat.micCoupe ? 'Micro coupé' : 'Micro') + '</span>'
 			$('.tel3cx-attente').classList.toggle('tel3cx-actif', etat.enAttente)
 			$('.tel3cx-montrer-clavier').classList.toggle('tel3cx-actif', etat.clavierAppel)
+			// Transfert / consultation / conférence
+			const consult = etat.consult
+			const second = $('.tel3cx-appel-second')
+			second.hidden = !consult
+			if (consult) {
+				second.textContent = etat.conference
+					? `Conférence avec ${etat.correspondantConsult}`
+					: `Avec ${etat.correspondantConsult}${etat.consultEtablie ? '' : ' (ça sonne…)'} — ${etat.correspondant} patiente`
+			}
+			$('.tel3cx-transfert').hidden = !etat.transfertOuvert || !!consult || !etat.debutAppel
+			$('.tel3cx-consultation').hidden = !consult || etat.conference || !etat.consultEtablie
+			$('.tel3cx-montrer-transfert').hidden = !!consult
+			$('.tel3cx-montrer-transfert').classList.toggle('tel3cx-actif', !!etat.transfertOuvert)
 		}
 
 		function remplir(numero, libelle) {
@@ -477,7 +510,8 @@
 			}
 		}
 
-		function brancherSession(session) {
+		function brancherSession(sessionInitiale) {
+			let session = sessionInitiale
 			etat.session = session
 			// Collecte ICE : on n'attend pas la fin si une adresse publique (STUN) est déjà connue.
 			session.on('icecandidate', (d) => {
@@ -517,6 +551,38 @@
 				afficherMessage('')
 			})
 			const fin = (raison) => (d) => {
+				if (etat.session !== session) return
+				if (etat.consult) {
+					const b = etat.consult
+					arreterMixage()
+					if (etat.transfertAccepte) {
+						try { b.terminate() } catch (e) { /* déjà fini */ }
+					} else if (etat.consultEtablie) {
+						// Le premier correspondant a raccroché : on continue avec le second.
+						const qui = etat.correspondant
+						Object.assign(etat, {
+							session: b, consult: null, consultEtablie: false, conference: false, enAttente: false,
+							correspondant: etat.correspondantConsult, numeroCorrespondant: '', sens: 'sortant',
+						})
+						audioDistant.srcObject = audioConsult.srcObject || fluxDistant(b)
+						audioConsult.srcObject = null
+						b.removeAllListeners('ended')
+						b.removeAllListeners('failed')
+						b.on('ended', fin('fin'))
+						b.on('failed', fin('echec'))
+						session = b
+						afficherMessage(`${qui} a raccroché : vous restez en ligne.`, 'info')
+						majZoneAppel('En communication')
+						majBouton()
+						return
+					} else {
+						try { b.terminate() } catch (e) { /* déjà fini */ }
+					}
+					Object.assign(etat, { consult: null, consultEtablie: false, conference: false })
+					audioConsult.srcObject = null
+				}
+				etat.transfertAccepte = false
+				etat.transfertOuvert = false
 				const etaitEtabli = !!etat.debutAppel
 				const sens = etat.sens
 				if (etaitEtabli) signalerEnCommunication(false)
@@ -594,7 +660,7 @@
 		function surNouvelleSession(e) {
 			if (e.originator !== 'remote') return
 			const session = e.session
-			if (etat.session) {
+			if (etat.session || etat.consult) {
 				// Déjà en ligne : l'appelant entend « occupé » (le standard peut renvoyer vers la messagerie).
 				session.terminate({ status_code: 486, reason_phrase: 'Busy Here' })
 				return
@@ -639,6 +705,7 @@
 
 		function raccrocher() {
 			if (!etat.session) return
+			if (etat.consult) { try { etat.consult.terminate() } catch (e) { /* déjà fini */ } }
 			try {
 				if (etat.sens === 'entrant' && !etat.debutAppel) {
 					etat.refusVolontaire = true
@@ -653,6 +720,173 @@
 			etat.micCoupe = !etat.micCoupe
 			if (etat.micCoupe) etat.session.mute({ audio: true }); else etat.session.unmute({ audio: true })
 			majZoneAppel('En communication')
+		}
+
+		// ------------------------------------------------ transfert, consultation et conférence à trois
+
+		function cibleSip(numero) { return `sip:${numero}@${etat.identifiants.domaine}` }
+
+		/** Destination saisie : numéro / poste, ou nom (carnet et collègues). */
+		function resoudreDestination(texte) {
+			const t = (texte || '').trim()
+			if (!t) return null
+			if (estNumero(t)) {
+				const numero = numeroAComposer(t)
+				const connu = nomPourNumero(numero)
+				return { numero, libelle: connu ? `${connu} (${lisible(numero)})` : lisible(numero) }
+			}
+			const mots = sansAccents(t).split(/\s+/).filter(Boolean)
+			for (const c of etat.contacts || []) {
+				if (mots.every((m) => sansAccents(c.nom).includes(m))) return { numero: c.poste, libelle: `${c.nom} (poste ${c.poste})` }
+			}
+			for (const c of etat.mesContacts || []) {
+				if (mots.every((m) => sansAccents(c.nom + ' ' + (c.societe || '')).includes(m)) && c.numeros && c.numeros[0]) {
+					const numero = numeroAComposer(c.numeros[0].numero)
+					return { numero, libelle: `${c.nom} (${lisible(numero)})` }
+				}
+			}
+			return null
+		}
+
+		function fluxDistant(session) {
+			const flux = new MediaStream()
+			const pc = session && session.connection
+			if (pc) pc.getReceivers().forEach((r) => r.track && r.track.kind === 'audio' && flux.addTrack(r.track))
+			return flux
+		}
+
+		function transfererDirect(dest) {
+			const a = etat.session
+			try {
+				const r = a.refer(cibleSip(dest.numero))
+				afficherMessage(`Transfert vers ${dest.libelle}…`, 'info')
+				r.on('accepted', () => {
+					afficherMessage(`Appel transféré à ${dest.libelle}.`, 'succes')
+					setTimeout(() => { try { if (etat.session === a) a.terminate() } catch (e) { /* déjà fini */ } }, 1500)
+				})
+				const echec = () => afficherMessage('Le transfert a échoué : vous êtes toujours en communication.', 'erreur')
+				r.on('requestFailed', echec)
+				r.on('failed', echec)
+			} catch (e) {
+				afficherMessage('Transfert impossible : ' + (e && e.message ? e.message : 'erreur'), 'erreur')
+			}
+		}
+
+		function appelerConsultation(dest, ajouter) {
+			const a = etat.session
+			if (!etat.enAttente) { a.hold(); etat.enAttente = true }
+			etat.correspondantConsult = dest.libelle
+			etat.consultEtablie = false
+			etat.ajoutConference = !!ajouter
+			etat.transfertOuvert = false
+			let b
+			try {
+				b = etat.ua.call(cibleSip(dest.numero), optionsMedia())
+			} catch (e) {
+				a.unhold(); etat.enAttente = false
+				afficherMessage('Appel impossible : ' + (e && e.message ? e.message : 'erreur'), 'erreur')
+				majZoneAppel('En communication')
+				return
+			}
+			etat.consult = b
+			b.on('icecandidate', (d) => { if (d.candidate && d.candidate.type === 'srflx') d.ready() })
+			b.on('peerconnection', (d) => d.peerconnection.addEventListener('track', (t) => {
+				if (t.streams && t.streams[0]) audioConsult.srcObject = t.streams[0]
+			}))
+			b.on('progress', (d) => { if (!(d.response && d.response.body)) sonnerie.retour() })
+			b.on('confirmed', () => {
+				sonnerie.arreter()
+				etat.consultEtablie = true
+				if (!audioConsult.srcObject) audioConsult.srcObject = fluxDistant(b)
+				if (etat.ajoutConference) demarrerConference()
+				majZoneAppel(etat.conference ? 'Conférence à trois' : 'En communication')
+				majBouton()
+			})
+			const finB = (d) => finConsultation(b, d)
+			b.on('ended', finB)
+			b.on('failed', finB)
+			afficherMessage('')
+			majZoneAppel('En attente')
+		}
+
+		function finConsultation(b, d) {
+			if (etat.consult !== b) return
+			sonnerie.arreter()
+			arreterMixage()
+			const etaitConference = etat.conference
+			const etaitEtablie = etat.consultEtablie
+			const qui = etat.correspondantConsult
+			Object.assign(etat, { consult: null, consultEtablie: false, conference: false, ajoutConference: false })
+			audioConsult.srcObject = null
+			if (etat.transfertAccepte) {
+				etat.transfertAccepte = false
+				return
+			}
+			const a = etat.session
+			if (a && etat.enAttente) { try { a.unhold() } catch (e) { /* sans effet */ } etat.enAttente = false }
+			if (etaitConference) afficherMessage(`${qui} a quitté la conférence.`, 'info')
+			else if (!etaitEtablie && d && d.cause) afficherMessage(`${qui} n'a pas répondu : vous reprenez votre correspondant.`, 'info')
+			majZoneAppel(a ? 'En communication' : '')
+			majBouton()
+		}
+
+		function terminerTransfert() {
+			const a = etat.session
+			const b = etat.consult
+			if (!a || !b) return
+			try {
+				const r = a.refer(b.remote_identity.uri, { replaces: b })
+				afficherMessage(`Mise en relation avec ${etat.correspondantConsult}…`, 'info')
+				r.on('accepted', () => {
+					etat.transfertAccepte = true
+					afficherMessage('Transfert effectué : vos deux correspondants sont en relation.', 'succes')
+					setTimeout(() => {
+						for (const s2 of [b, a]) { try { s2.terminate() } catch (e) { /* déjà fini */ } }
+					}, 2000)
+				})
+				const echec = () => afficherMessage('Le transfert a échoué : utilisez « Revenir » ou « Conférence à trois ».', 'erreur')
+				r.on('requestFailed', echec)
+				r.on('failed', echec)
+			} catch (e) {
+				afficherMessage('Transfert impossible : ' + (e && e.message ? e.message : 'erreur'), 'erreur')
+			}
+		}
+
+		// Conférence à trois : chaque correspondant reçoit votre voix + celle de l'autre (mélange local).
+		let mixage = null
+		function demarrerConference() {
+			const a = etat.session
+			const b = etat.consult
+			if (!a || !b || etat.conference) return
+			try {
+				if (etat.enAttente) { a.unhold(); etat.enAttente = false }
+				const ctx = new (window.AudioContext || window.webkitAudioContext)()
+				const senderA = a.connection.getSenders().find((x) => x.track && x.track.kind === 'audio')
+				const senderB = b.connection.getSenders().find((x) => x.track && x.track.kind === 'audio')
+				const micro = ctx.createMediaStreamSource(new MediaStream([senderA.track]))
+				const versA = ctx.createMediaStreamDestination()
+				const versB = ctx.createMediaStreamDestination()
+				micro.connect(versA)
+				micro.connect(versB)
+				ctx.createMediaStreamSource(fluxDistant(b)).connect(versA)
+				ctx.createMediaStreamSource(fluxDistant(a)).connect(versB)
+				mixage = { ctx, senderA, senderB, pisteA: senderA.track, pisteB: senderB.track }
+				senderA.replaceTrack(versA.stream.getAudioTracks()[0])
+				senderB.replaceTrack(versB.stream.getAudioTracks()[0])
+				etat.conference = true
+				afficherMessage('Conférence à trois : chacun entend les deux autres.', 'succes')
+			} catch (e) {
+				arreterMixage()
+				afficherMessage('Conférence impossible sur ce poste : ' + (e && e.message ? e.message : 'erreur'), 'erreur')
+			}
+			majZoneAppel(etat.conference ? 'Conférence à trois' : 'En communication')
+		}
+		function arreterMixage() {
+			if (!mixage) return
+			try { mixage.senderA.replaceTrack(mixage.pisteA) } catch (e) { /* appel terminé */ }
+			try { mixage.senderB.replaceTrack(mixage.pisteB) } catch (e) { /* appel terminé */ }
+			try { mixage.ctx.close() } catch (e) { /* déjà fermé */ }
+			mixage = null
 		}
 
 		function basculerAttente() {
@@ -720,6 +954,36 @@
 		$('.tel3cx-refuser').addEventListener('click', raccrocher)
 		$('.tel3cx-micro').addEventListener('click', basculerMicro)
 		$('.tel3cx-attente').addEventListener('click', basculerAttente)
+		const champTransfert = $('.tel3cx-transfert-champ')
+		const cibleTransfert = $('.tel3cx-transfert-cible')
+		$('.tel3cx-montrer-transfert').addEventListener('click', () => {
+			etat.transfertOuvert = !etat.transfertOuvert
+			etat.clavierAppel = false
+			majZoneAppel(etat.enAttente ? 'En attente' : 'En communication')
+			majBouton()
+			if (etat.transfertOuvert) { champTransfert.value = ''; cibleTransfert.textContent = ''; champTransfert.focus() }
+		})
+		champTransfert.addEventListener('input', () => {
+			const dest = resoudreDestination(champTransfert.value)
+			cibleTransfert.textContent = dest ? `→ ${dest.libelle}` : (champTransfert.value.trim() ? 'Destinataire introuvable' : '')
+		})
+		champTransfert.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); panneau.querySelector('[data-transfert="annonce"]').click() } })
+		panneau.querySelectorAll('[data-transfert]').forEach((b) => b.addEventListener('click', () => {
+			const dest = resoudreDestination(champTransfert.value)
+			if (!dest) { cibleTransfert.textContent = 'Indiquez un numéro, un poste ou un nom connu.'; champTransfert.focus(); return }
+			if (dest.numero === (etat.identifiants && etat.identifiants.utilisateur)) { cibleTransfert.textContent = 'C\'est votre propre poste.'; return }
+			etat.transfertOuvert = false
+			if (b.dataset.transfert === 'direct') transfererDirect(dest)
+			else appelerConsultation(dest, b.dataset.transfert === 'ajouter')
+			majBouton()
+		}))
+		panneau.querySelectorAll('[data-consultation]').forEach((b) => b.addEventListener('click', () => {
+			const action = b.dataset.consultation
+			if (action === 'terminer') terminerTransfert()
+			else if (action === 'conference') demarrerConference()
+			else if (action === 'revenir' && etat.consult) { try { etat.consult.terminate() } catch (e) { /* déjà fini */ } }
+		}))
+
 		$('.tel3cx-montrer-clavier').addEventListener('click', () => {
 			etat.clavierAppel = !etat.clavierAppel
 			majZoneAppel(etat.enAttente ? 'En attente' : 'En communication')
@@ -1156,7 +1420,7 @@
 			conteneurBouton.classList.add('tel3cx-flottant')
 			document.body.append(conteneurBouton)
 		}
-		document.body.append(tableau, panneau, audioDistant)
+		document.body.append(tableau, panneau, audioDistant, audioConsult)
 
 		// ---------------------------------------------------------- réunion Jitsi (bouton de l'accueil de Talk)
 		// « Commencer une réunion maintenant » crée une réunion Jitsi (meet.hoalen-avocats.com) par l'appli

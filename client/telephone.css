@@ -871,3 +871,48 @@ body[data-theme-dark] .tel3cx-tableau .tel3cx-onglets button[aria-selected="true
 	pointer-events: none;
 }
 .tel3cx-alerte-manques[hidden] { display: none; }
+
+/* ------------------------------------------------------------------ transfert / consultation / conférence */
+.tel3cx-appel-second {
+	margin-top: 6px;
+	padding: 6px 12px;
+	border-radius: 100px;
+	background: var(--tel3cx-fond, #fbfaf8);
+	font-size: .85em;
+	color: var(--tel3cx-texte-2, #5b5a55);
+	text-align: center;
+}
+.tel3cx-appel-second[hidden], .tel3cx-transfert[hidden], .tel3cx-consultation[hidden] { display: none; }
+.tel3cx-transfert { display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: 8px; }
+.tel3cx-panneau input.tel3cx-transfert-champ {
+	width: 100%;
+	height: 40px;
+	margin: 0;
+	padding: 0 14px;
+	border: 1px solid var(--tel3cx-trait-fort, #b0b0af);
+	border-radius: 100px;
+	background: var(--tel3cx-fond, #fbfaf8);
+	color: var(--tel3cx-texte, #111110);
+	font-family: inherit;
+}
+.tel3cx-transfert-cible { min-height: 1.1em; font-size: .82em; color: var(--tel3cx-texte-2, #5b5a55); text-align: center; }
+.tel3cx-transfert-boutons, .tel3cx-consultation { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 4px; }
+.tel3cx-panneau .tel3cx-transfert-boutons button, .tel3cx-panneau .tel3cx-consultation button {
+	min-height: 0;
+	margin: 0;
+	padding: 7px 12px;
+	border: 1px solid var(--tel3cx-trait-fort, #b0b0af);
+	border-radius: 100px;
+	background: var(--tel3cx-fond, #fbfaf8);
+	color: var(--tel3cx-texte, #111110);
+	font-family: inherit;
+	font-size: 12px;
+	letter-spacing: .05em;
+	text-transform: uppercase;
+	cursor: pointer;
+}
+.tel3cx-panneau .tel3cx-transfert-boutons button:hover, .tel3cx-panneau .tel3cx-consultation button:hover { border-color: var(--tel3cx-encre, #111110); }
+.tel3cx-panneau .tel3cx-transfert-boutons button[data-transfert="direct"],
+.tel3cx-panneau .tel3cx-consultation button[data-consultation="terminer"] { border-color: var(--tel3cx-accent, #6b6862); background: var(--tel3cx-accent, #6b6862); color: #fff; }
+.tel3cx-panneau button.tel3cx-action[hidden] { display: none; }
+.tel3cx-appel-actions { flex-wrap: wrap; justify-content: center; }
