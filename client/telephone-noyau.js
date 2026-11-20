@@ -1070,7 +1070,7 @@
 			<form class="tel3cx-reunion-carte tel3cx-reunion-nom">
 				<button type="button" class="tel3cx-reunion-fermer" aria-label="Annuler" title="Annuler">✕</button>
 				<div class="tel3cx-reunion-titre">Nouvelle réunion</div>
-				<label class="tel3cx-reunion-texte" for="tel3cx-reunion-nom">Nom affiché pour vous et vos invités</label>
+				<label class="tel3cx-reunion-texte" for="tel3cx-reunion-nom">Nom de la salle pour vous et vos invités</label>
 				<input type="text" id="tel3cx-reunion-nom" class="tel3cx-reunion-lien" maxlength="80" value="Réunion" autocomplete="off">
 				<div class="tel3cx-reunion-actions">
 					<button type="submit" class="tel3cx-reunion-copier">Démarrer</button>
