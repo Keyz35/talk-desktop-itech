@@ -270,3 +270,21 @@ if "lancement technique de Squirrel" not in texte:
         sys.exit("ÉCHEC : gestionnaire second-instance introuvable ou ambigu dans main.js")
     main.write_text(texte.replace(ancien, nouveau), encoding="utf-8")
     print("main.js : mises à jour sans fermeture de l'application (lancements Squirrel ignorés)")
+
+# 15. Icône toujours visible près de l'horloge sous Windows 11 (src/app/itechIconeVisible.ts, copié par construire.sh)
+main = racine / "src/main.js"
+texte = main.read_text(encoding="utf-8")
+if "rendreIconeVisible" not in texte:
+    for ancien, nouveau in (
+        ("const { reglerCacheAvatars } = require('./app/itechCacheAvatars.ts') // ajout iTech\n",
+         "const { reglerCacheAvatars } = require('./app/itechCacheAvatars.ts') // ajout iTech\n"
+         "const { rendreIconeVisible } = require('./app/itechIconeVisible.ts') // ajout iTech\n"),
+        ("\treglerCacheAvatars() // ajout iTech : photos de profil à jour (cache des avatars)\n",
+         "\treglerCacheAvatars() // ajout iTech : photos de profil à jour (cache des avatars)\n"
+         "\trendreIconeVisible() // ajout iTech : icône toujours visible près de l'horloge (Windows 11)\n"),
+    ):
+        if texte.count(ancien) != 1:
+            sys.exit(f"ÉCHEC : repère introuvable ou ambigu dans main.js :\n{ancien}")
+        texte = texte.replace(ancien, nouveau)
+    main.write_text(texte, encoding="utf-8")
+    print("main.js : icône toujours visible près de l'horloge")
