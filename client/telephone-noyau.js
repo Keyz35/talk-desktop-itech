@@ -61,6 +61,12 @@
 		return /^0\d{9}$/.test(numero) ? numero.replace(/(\d{2})(?=\d)/g, '$1 ') : numero
 	}
 
+	/** « Poste 198 · 02 30 96 12 89 » : numéro direct (SDA) ajouté s'il est fourni par le standard. */
+	function libellePoste(id) {
+		const sda = id && id.sda ? lisible(numeroAComposer(String(id.sda))) : ''
+		return `Poste ${id.utilisateur}` + (sda ? ` · ${sda}` : '')
+	}
+
 	function formatDuree(secondes) {
 		const m = Math.floor(secondes / 60)
 		const s = secondes % 60
@@ -441,30 +447,30 @@
 				connection_recovery_max_interval: 30,
 			})
 			etat.ua = ua
-			majStatut(`Poste ${id.utilisateur} · connexion…`, '')
+			majStatut(`${libellePoste(id)} · connexion…`, '')
 
 			ua.on('registered', () => {
 				etat.enregistre = true
-				majStatut(`Poste ${id.utilisateur} · prêt`, 'tel3cx-connecte', 'Ce téléphone sonne pour les appels reçus sur votre poste.')
+				majStatut(`${libellePoste(id)} · prêt`, 'tel3cx-connecte', 'Ce téléphone sonne pour les appels reçus sur votre poste.')
 				majBouton()
 			})
 			ua.on('unregistered', () => {
 				etat.enregistre = false
-				majStatut(`Poste ${id.utilisateur} · déconnecté`, 'tel3cx-attention')
+				majStatut(`${libellePoste(id)} · déconnecté`, 'tel3cx-attention')
 				majBouton()
 			})
 			ua.on('registrationFailed', (e) => {
 				etat.enregistre = false
 				const code = e && e.response && e.response.status_code
 				majStatut(code === 401 || code === 403
-					? `Poste ${id.utilisateur} · refusé par le standard`
-					: `Poste ${id.utilisateur} · standard injoignable, nouvel essai…`, 'tel3cx-attention')
+					? `${libellePoste(id)} · refusé par le standard`
+					: `${libellePoste(id)} · standard injoignable, nouvel essai…`, 'tel3cx-attention')
 				majBouton()
 			})
 			ua.on('disconnected', () => {
 				if (etat.enregistre) {
 					etat.enregistre = false
-					majStatut(`Poste ${id.utilisateur} · connexion perdue, reconnexion…`, 'tel3cx-attention')
+					majStatut(`${libellePoste(id)} · connexion perdue, reconnexion…`, 'tel3cx-attention')
 					majBouton()
 				}
 			})

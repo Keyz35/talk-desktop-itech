@@ -1,4 +1,4 @@
-/* Téléphone 3CX — reprend les couleurs du thème Nextcloud (clair et sombre). */
+/* Téléphone — reprend les couleurs du thème Nextcloud (clair et sombre). */
 
 .tel3cx-entete {
 	display: flex;
@@ -592,6 +592,7 @@
 	--tel3cx-corail: #d96b5a;
 	--tel3cx-jaune: #fbd469;
 	--tel3cx-vert: #96c68d;
+	--tel3cx-vert-texte: #1e3b19;    /* sur fond vert pâle : contraste ≈ 7:1 */
 	--tel3cx-turquoise: #08aba8;
 	--tel3cx-accent: #6b6862;        /* gris chaud = couleur principale Nextcloud (choix de Jordan) */
 	--tel3cx-dispo: #7fb874;         /* vert du pôle social, un peu soutenu pour les petites pastilles */
@@ -677,14 +678,15 @@ body[data-theme-dark-highcontrast] .tel3cx-panneau, body[data-theme-dark-highcon
 	text-transform: uppercase;
 	transition: filter .15s, transform .1s;
 }
+/* Appeler / Répondre : vert pâle de la charte (choix de Jordan, 20/11), texte vert très foncé pour rester lisible */
 .tel3cx-panneau button.tel3cx-appeler,
-.tel3cx-panneau button.tel3cx-appeler:disabled { background: var(--tel3cx-accent); color: #fff; }
+.tel3cx-panneau button.tel3cx-appeler:disabled { background: var(--tel3cx-vert); color: var(--tel3cx-vert-texte); }
 .tel3cx-panneau button.tel3cx-appeler:hover:not(:disabled) { filter: brightness(.92); }
 .tel3cx-panneau button.tel3cx-appeler:active:not(:disabled), .tel3cx-panneau button.tel3cx-raccrocher:active { transform: scale(.98); }
 .tel3cx-panneau button.tel3cx-raccrocher { background: var(--tel3cx-corail); color: #fff; }
-.tel3cx-panneau button.tel3cx-repondre { background: var(--tel3cx-accent); }
+.tel3cx-panneau button.tel3cx-repondre { background: var(--tel3cx-vert); color: var(--tel3cx-vert-texte); }
 .tel3cx-panneau button.tel3cx-refuser { background: var(--tel3cx-corail); }
-@keyframes tel3cx-pulse { 50% { box-shadow: 0 0 0 10px rgba(107, 104, 98, .22); } }
+@keyframes tel3cx-pulse { 50% { box-shadow: 0 0 0 10px rgba(150, 198, 141, .35); } }
 
 /* Appel en cours */
 .tel3cx-appel { background: var(--tel3cx-fond-2); border-radius: 18px; }
