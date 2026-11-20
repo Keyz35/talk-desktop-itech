@@ -45,6 +45,7 @@ DEST="$TRAVAIL/src/talk/renderer/Telephone3CX"
 mkdir -p "$DEST"
 cp "$ICI/integration/Telephone3CX.ts" "$DEST/"
 cp "$ICI/integration/itechMisesAJour.ts" "$TRAVAIL/src/app/"
+cp "$ICI/integration/itechCacheAvatars.ts" "$TRAVAIL/src/app/"
 cp "$ICI/client/telephone-noyau.js" "$ICI/client/jssip.min.js" "$ICI/client/telephone.css" "$DEST/"
 cp "$ICI/client/charte/charte-talk-desktop.css" "$DEST/"
 mkdir -p "$TRAVAIL/src/talk/renderer/fonts" && cp "$ICI"/client/fonts/*.woff2 "$TRAVAIL/src/talk/renderer/fonts/"
@@ -103,7 +104,7 @@ DOSSIER_APPLI="$(find "$TRAVAIL/out" -maxdepth 1 -type d -name "$NOM-win32-x64" 
 [ -n "$DOSSIER_APPLI" ] || { echo "ÉCHEC : dossier compilé introuvable dans out/" >&2; exit 1; }
 # Contrôle : nos ajouts doivent être dans l'application compilée, sinon on n'en livre rien.
 ASAR="$DOSSIER_APPLI/resources/app.asar"
-for repere in "Quitter" "Hoalen Talk Teams" "hoalen-windows-x64" "Outfit Hoalen" "--color-primary-element: #6b6862" "#F0EDE4" tel3cx-panneau Telephone3CX apps/telephone3cx/api/v1 JsSIP demarrerMisesAJourItech maj-talk.itech.ovh 'isBranded:!0' "\"$VERSION_ITECH\""; do
+for repere in "itech-cache-avatars-v1" "Quitter" "Hoalen Talk Teams" "hoalen-windows-x64" "Outfit Hoalen" "--color-primary-element: #6b6862" "#F0EDE4" tel3cx-panneau Telephone3CX apps/telephone3cx/api/v1 JsSIP demarrerMisesAJourItech maj-talk.itech.ovh 'isBranded:!0' "\"$VERSION_ITECH\""; do
   grep -a -q -F -- "$repere" "$ASAR" || { echo "ÉCHEC du contrôle : « $repere » absent de l'application compilée" >&2; exit 1; }
 done
 echo "Contrôle : bouton, téléphone intégré, mises à jour iTech, personnalisation et version $VERSION_ITECH présents."

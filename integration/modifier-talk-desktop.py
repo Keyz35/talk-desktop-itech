@@ -132,3 +132,21 @@ if "ajout iTech : premier plan" not in texte:
         sys.exit("ÉCHEC : focusMainWindow introuvable ou ambigu dans main.js")
     main.write_text(texte.replace(ancien, nouveau), encoding="utf-8")
     print("main.js : retour au premier plan forcé au clic sur une notification")
+
+# 9. Photos de profil à jour sans manipulation (src/app/itechCacheAvatars.ts, copié par construire.sh)
+main = racine / "src/main.js"
+texte = main.read_text(encoding="utf-8")
+if "reglerCacheAvatars" not in texte:
+    for ancien, nouveau in (
+        ("const { demarrerMisesAJourItech } = require('./app/itechMisesAJour.ts') // ajout iTech\n",
+         "const { demarrerMisesAJourItech } = require('./app/itechMisesAJour.ts') // ajout iTech\n"
+         "const { reglerCacheAvatars } = require('./app/itechCacheAvatars.ts') // ajout iTech\n"),
+        ("\tdemarrerMisesAJourItech() // ajout iTech : nos propres mises à jour\n",
+         "\tdemarrerMisesAJourItech() // ajout iTech : nos propres mises à jour\n"
+         "\treglerCacheAvatars() // ajout iTech : photos de profil à jour (cache des avatars)\n"),
+    ):
+        if texte.count(ancien) != 1:
+            sys.exit(f"ÉCHEC : repère introuvable ou ambigu dans main.js :\n{ancien}")
+        texte = texte.replace(ancien, nouveau)
+    main.write_text(texte, encoding="utf-8")
+    print("main.js : cache des avatars réglé (photos à jour)")
