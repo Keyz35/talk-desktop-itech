@@ -839,3 +839,9 @@ body[data-theme-dark] .tel3cx-tableau .tel3cx-onglets button[aria-selected="true
 /* Étapes de la fenêtre réunion */
 .tel3cx-reunion-carte[hidden] { display: none; }
 .tel3cx-reunion label.tel3cx-reunion-texte { display: block; margin: 6px 0 8px; }
+
+/* Accueil de Talk : cartes illustrées (planifier des réunions, mentions, rappels) en niveaux de gris,
+   pour s'accorder à la charte Hoalen (demande de Jordan, 20/11/2026). */
+.dashboard-section {
+	filter: grayscale(1);
+}
