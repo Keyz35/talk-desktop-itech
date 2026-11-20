@@ -840,8 +840,15 @@ body[data-theme-dark] .tel3cx-tableau .tel3cx-onglets button[aria-selected="true
 .tel3cx-reunion-carte[hidden] { display: none; }
 .tel3cx-reunion label.tel3cx-reunion-texte { display: block; margin: 6px 0 8px; }
 
-/* Accueil de Talk : cartes illustrées (planifier des réunions, mentions, rappels) en niveaux de gris,
-   pour s'accorder à la charte Hoalen (demande de Jordan, 20/11/2026). */
-.dashboard-section {
-	filter: grayscale(1);
+/* Accueil de Talk : illustrations des cartes (planifier des réunions, mentions, rappels) teintées
+   sable, comme la barre du haut (#f0ede4) — demande de Jordan, 20/11/2026. Seule l'image est filtrée,
+   jamais le texte. Fond bleu clair -> #f1ece4, formes 3D -> tons chauds #d4d0c9 à #848380. */
+:root { --tel3cx-filtre-illustration: grayscale(1) sepia(.2) contrast(.55) brightness(1.23); }
+/* Talk Desktop (Talk 25) : l'illustration est le calque ::before de la carte */
+.dashboard-section--background::before { filter: var(--tel3cx-filtre-illustration) !important; }
+.dashboard-section--background.dashboard-section--veiled::before {
+	filter: blur(var(--dashboard-section-blur)) var(--tel3cx-filtre-illustration) !important;
 }
+/* Navigateur (Talk 24) : l'illustration est une image dans le bandeau de la carte */
+.dashboard-section__bar img,
+.dashboard-section__bar.gradient { filter: var(--tel3cx-filtre-illustration); }
