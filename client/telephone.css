@@ -852,3 +852,22 @@ body[data-theme-dark] .tel3cx-tableau .tel3cx-onglets button[aria-selected="true
 /* Navigateur (Talk 24) : l'illustration est une image dans le bandeau de la carte */
 .dashboard-section__bar img,
 .dashboard-section__bar.gradient { filter: var(--tel3cx-filtre-illustration); }
+
+/* Appels manqués non consultés : « ! » rouge sur le bouton du pavé (tableau de bord) */
+.tel3cx-alerte-manques {
+	position: absolute;
+	top: 1px;
+	right: 1px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 15px;
+	height: 15px;
+	border-radius: 50%;
+	background: #c62828;
+	color: #fff;
+	font: 700 11px/1 'Outfit Hoalen', var(--font-face, sans-serif);
+	box-shadow: 0 0 0 2px var(--color-background-plain, #f0ede4);
+	pointer-events: none;
+}
+.tel3cx-alerte-manques[hidden] { display: none; }

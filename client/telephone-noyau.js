@@ -294,6 +294,24 @@
 			try { return JSON.parse(localStorage.getItem(cleRecents()) || '[]') } catch (e) { return [] }
 		}
 
+		// Appels manqués non encore consultés : alerte « ! » rouge sur le bouton du pavé (tableau de bord).
+		const cleManques = () => 'tel3cx-manques-' + ((etat.identifiants && etat.identifiants.utilisateur) || 'rappel')
+		function lireManques() {
+			try { return parseInt(localStorage.getItem(cleManques()) || '0', 10) || 0 } catch (e) { return 0 }
+		}
+		function changerManques(n) {
+			try { localStorage.setItem(cleManques(), String(n)) } catch (e) { /* stockage indisponible */ }
+			majAlerteManques()
+		}
+		function majAlerteManques() {
+			const n = lireManques()
+			alerteManques.hidden = n === 0
+			boutonTableau.title = n === 0
+				? 'Téléphonie : contacts, appels récents, pavé numérique'
+				: `${n} appel${n > 1 ? 's' : ''} manqué${n > 1 ? 's' : ''} — ouvrir la téléphonie`
+			boutonTableau.setAttribute('aria-label', n === 0 ? 'Téléphonie' : `Téléphonie, ${n} appel${n > 1 ? 's' : ''} manqué${n > 1 ? 's' : ''}`)
+		}
+
 		function noterRecent(numero, libelle, sens) {
 			if (etat.mode !== 'telephone') return
 			const liste = lireRecentsLocaux().filter((a) => !(a.numero === numero && a.sens === sens))
@@ -372,6 +390,7 @@
 			}
 			etat.mode = 'telephone'
 			etat.identifiants = id
+			majAlerteManques()
 			const socket = new JsSIP.WebSocketInterface(id.wss)
 			const ua = new JsSIP.UA({
 				sockets: [socket],
@@ -472,7 +491,12 @@
 				const sens = etat.sens
 				sonnerie.arreter()
 				clearInterval(etat.minuteDuree)
-				if (sens === 'entrant' && !etaitEtabli) noterRecent(etat.numeroCorrespondant, etat.correspondant, 'manque')
+				if (sens === 'entrant' && !etaitEtabli) {
+					noterRecent(etat.numeroCorrespondant, etat.correspondant, 'manque')
+					// Refus volontaire (bouton Refuser) : pas d'alerte ; sinon appel manqué signalé sur le bouton du pavé.
+					if (!etat.refusVolontaire && !etat.tableau) changerManques(lireManques() + 1)
+				}
+				etat.refusVolontaire = false
 				Object.assign(etat, { session: null, sens: null, debutAppel: null, micCoupe: false, enAttente: false, clavierAppel: false })
 				audioDistant.srcObject = null
 				$('.tel3cx-appel-duree').textContent = ''
@@ -579,7 +603,10 @@
 		function raccrocher() {
 			if (!etat.session) return
 			try {
-				if (etat.sens === 'entrant' && !etat.debutAppel) etat.session.terminate({ status_code: 603, reason_phrase: 'Decline' })
+				if (etat.sens === 'entrant' && !etat.debutAppel) {
+					etat.refusVolontaire = true
+					etat.session.terminate({ status_code: 603, reason_phrase: 'Decline' })
+				}
 				else etat.session.terminate()
 			} catch (e) { /* déjà terminé */ }
 		}
@@ -971,6 +998,7 @@
 		function ouvrirTableau() {
 			etat.tableau = true
 			tableau.hidden = false
+			changerManques(0)  // les appels manqués sont listés dans la colonne Récents
 			placerTableau()
 			suivreZone()
 			boutonTableau.setAttribute('aria-pressed', 'true')
@@ -1023,6 +1051,11 @@
 		boutonTableau.setAttribute('aria-label', 'Téléphonie')
 		boutonTableau.setAttribute('aria-pressed', 'false')
 		boutonTableau.innerHTML = icone('clavier', 20)
+		const alerteManques = document.createElement('span')
+		alerteManques.className = 'tel3cx-alerte-manques'
+		alerteManques.textContent = '!'
+		alerteManques.hidden = true
+		boutonTableau.append(alerteManques)
 		boutonTableau.addEventListener('click', (e) => {
 			e.stopPropagation()
 			etat.tableau ? fermerTableau() : ouvrirTableau()
