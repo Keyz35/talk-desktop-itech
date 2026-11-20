@@ -1270,11 +1270,14 @@
 				sens.className = 'tel3cx-sens'
 				sens.textContent = a.statut === 'manque' ? '✕' : a.sens === 'sortant' ? '↗' : '↙'
 				sens.title = a.statut === 'manque' ? 'Manqué' : a.sens === 'sortant' ? 'Émis' : 'Reçu'
+				// Statuts du standard affichés en clair (« pris_ailleurs » : un collègue ou un autre appareil a décroché)
+				const STATUTS = { pris_ailleurs: 'pris par un collègue', echec: 'non abouti', occupe: 'occupé' }
+				if (STATUTS[a.statut]) li.classList.add('tel3cx-statut-' + a.statut)
 				const texte = document.createElement('span')
 				texte.className = 'tel3cx-contact-texte'
 				texte.innerHTML = '<span class="tel3cx-nom"></span><span class="tel3cx-num"></span>'
 				texte.querySelector('.tel3cx-nom').textContent = a.libelle
-				texte.querySelector('.tel3cx-num').textContent = [formatDate(a.date), formatDureeCourte(a.duree)].filter(Boolean).join(' · ')
+				texte.querySelector('.tel3cx-num').textContent = [formatDate(a.date), formatDureeCourte(a.duree), STATUTS[a.statut]].filter(Boolean).join(' · ')
 				li.append(sens, texte, boutonAppelPetit(a.numero, a.libelle))
 				li.addEventListener('click', () => remplir(a.numero, a.libelle))
 				li.addEventListener('keydown', (e) => { if (e.key === 'Enter') appelerDirect(a.numero, a.libelle) })

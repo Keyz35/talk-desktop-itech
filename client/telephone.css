@@ -916,3 +916,6 @@ body[data-theme-dark] .tel3cx-tableau .tel3cx-onglets button[aria-selected="true
 .tel3cx-panneau .tel3cx-consultation button[data-consultation="terminer"] { border-color: var(--tel3cx-accent, #6b6862); background: var(--tel3cx-accent, #6b6862); color: #fff; }
 .tel3cx-panneau button.tel3cx-action[hidden] { display: none; }
 .tel3cx-appel-actions { flex-wrap: wrap; justify-content: center; }
+
+/* Récents : appels non aboutis / pris par un collègue, plus discrets */
+.tel3cx-recent.tel3cx-statut-echec .tel3cx-nom, .tel3cx-recent.tel3cx-statut-pris_ailleurs .tel3cx-nom { color: var(--tel3cx-texte-2, #5b5a55); }
