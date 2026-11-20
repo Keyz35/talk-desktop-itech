@@ -203,3 +203,70 @@ if "onItechTel" not in texte:
         sys.exit("ÉCHEC : focusTalk introuvable ou ambigu dans preload.js")
     preload.write_text(texte.replace(ancien, nouveau), encoding="utf-8")
     print("preload.js : liens tel: transmis à la fenêtre")
+
+# 12. Menu du clic droit : retirer « Toggle Developer Tools » (laissé par Nextcloud avec un « TODO : retirer
+#     avant la version finale ») et mettre les entrées en français. Les outils de développement restent
+#     accessibles au clavier (Ctrl+Maj+I) pour le dépannage.
+menu = racine / "src/app/applyContextMenu.js"
+texte = menu.read_text(encoding="utf-8")
+if "ajout iTech : menu en français" not in texte:
+    for ancien, nouveau in (
+        ("\t\t// TODO Remove or hide from production DevTools toggle before final release\n"
+         "\t\tmenuItems.push({ role: 'toggleDevTools' })\n",
+         "\t\t// ajout iTech : menu en français, sans « Toggle Developer Tools » ; pas de séparateur final\n"
+         "\t\twhile (menuItems.length && menuItems[menuItems.length - 1].type === 'separator') {\n"
+         "\t\t\tmenuItems.pop()\n\t\t}\n\t\tif (!menuItems.length) {\n\t\t\treturn\n\t\t}\n"),
+        ("label: 'Add to dictionary'", "label: 'Ajouter au dictionnaire'"),
+        ("label: 'Copy image'", "label: 'Copier l\\'image'"),
+        ("label: 'Save image'", "label: 'Enregistrer l\\'image'"),
+        ("label: 'Copy link address'", "label: 'Copier l\\'adresse du lien'"),
+        ("label: 'Copy link text'", "label: 'Copier le texte du lien'"),
+        ("label: 'Copy email address'", "label: 'Copier l\\'adresse e-mail'"),
+        ("\t\t\t\trole: 'copy',\n", "\t\t\t\trole: 'copy',\n\t\t\t\tlabel: 'Copier',\n"),
+        ("\t\t\t\trole: 'cut',\n", "\t\t\t\trole: 'cut',\n\t\t\t\tlabel: 'Couper',\n"),
+        ("\t\t\t\trole: 'selectAll',\n", "\t\t\t\trole: 'selectAll',\n\t\t\t\tlabel: 'Tout sélectionner',\n"),
+        ("\t\t\t\trole: 'paste',\n", "\t\t\t\trole: 'paste',\n\t\t\t\tlabel: 'Coller',\n"),
+    ):
+        if texte.count(ancien) != 1:
+            sys.exit(f"ÉCHEC : repère introuvable ou ambigu dans applyContextMenu.js :\n{ancien}")
+        texte = texte.replace(ancien, nouveau)
+    menu.write_text(texte, encoding="utf-8")
+    print("applyContextMenu.js : menu du clic droit en français, sans outils de développement")
+
+# 13. Journal de dépannage sur le poste (src/app/itechJournal.ts, copié par construire.sh) :
+#     plantages (fenêtre, audio, GPU…), fenêtre figée, erreurs JavaScript ; rechargement si la fenêtre plante.
+main = racine / "src/main.js"
+texte = main.read_text(encoding="utf-8")
+if "demarrerJournal" not in texte:
+    for ancien, nouveau in (
+        ("const { reglerCacheAvatars } = require('./app/itechCacheAvatars.ts') // ajout iTech\n",
+         "const { reglerCacheAvatars } = require('./app/itechCacheAvatars.ts') // ajout iTech\n"
+         "const { demarrerJournal } = require('./app/itechJournal.ts') // ajout iTech\n"),
+        # après le choix du dossier de l'application (le journal et les rapports de plantage y sont rangés)
+        ("app.setPath('userData', path.join(app.getPath('appData'), app.getName()))\n",
+         "app.setPath('userData', path.join(app.getPath('appData'), app.getName()))\n"
+         "demarrerJournal() // ajout iTech : journal-itech.log dans le dossier de l'application\n"),
+    ):
+        if texte.count(ancien) != 1:
+            sys.exit(f"ÉCHEC : repère introuvable ou ambigu dans main.js :\n{ancien}")
+        texte = texte.replace(ancien, nouveau)
+    main.write_text(texte, encoding="utf-8")
+    print("main.js : journal de dépannage (journal-itech.log)")
+
+# 14. Fermeture brutale pendant une mise à jour (constatée le 20/11 à 17 h 02 sur le poste 199).
+#     Squirrel, en appliquant une mise à jour, lance brièvement le NOUVEL exécutable avec --squirrel-updated
+#     (mise à jour des raccourcis). L'instance ouverte reçoit alors « second-instance » depuis un autre chemin
+#     (app-<nouvelle version>), croit à une autre installation, lance celle-ci et se ferme ; le lancement
+#     technique se ferme aussitôt : plus rien d'ouvert, appel en cours coupé. On ignore ces lancements.
+main = racine / "src/main.js"
+texte = main.read_text(encoding="utf-8")
+if "lancement technique de Squirrel" not in texte:
+    ancien = "\tapp.on('second-instance', (event, argv, cwd) => {\n"
+    nouveau = (ancien +
+        "\t\t// ajout iTech : lancement technique de Squirrel (--squirrel-updated…) pendant une mise à jour :\n"
+        "\t\t// ce n'est pas une autre installation, l'application ouverte doit rester ouverte.\n"
+        "\t\tif (argv.some((arg) => arg.startsWith('--squirrel-'))) {\n\t\t\treturn\n\t\t}\n")
+    if texte.count(ancien) != 1:
+        sys.exit("ÉCHEC : gestionnaire second-instance introuvable ou ambigu dans main.js")
+    main.write_text(texte.replace(ancien, nouveau), encoding="utf-8")
+    print("main.js : mises à jour sans fermeture de l'application (lancements Squirrel ignorés)")
