@@ -150,3 +150,56 @@ if "reglerCacheAvatars" not in texte:
         texte = texte.replace(ancien, nouveau)
     main.write_text(texte, encoding="utf-8")
     print("main.js : cache des avatars réglé (photos à jour)")
+
+# 10. Lancement automatique à l'ouverture de session (src/app/itechDemarrage.ts, copié par construire.sh)
+main = racine / "src/main.js"
+texte = main.read_text(encoding="utf-8")
+if "activerDemarrageAutomatique" not in texte:
+    for ancien, nouveau in (
+        ("const { reglerCacheAvatars } = require('./app/itechCacheAvatars.ts') // ajout iTech\n",
+         "const { reglerCacheAvatars } = require('./app/itechCacheAvatars.ts') // ajout iTech\n"
+         "const { activerDemarrageAutomatique } = require('./app/itechDemarrage.ts') // ajout iTech\n"),
+        ("\treglerCacheAvatars() // ajout iTech : photos de profil à jour (cache des avatars)\n",
+         "\treglerCacheAvatars() // ajout iTech : photos de profil à jour (cache des avatars)\n"
+         "\tactiverDemarrageAutomatique() // ajout iTech : démarrage avec Windows (une seule fois)\n"),
+    ):
+        if texte.count(ancien) != 1:
+            sys.exit(f"ÉCHEC : repère introuvable ou ambigu dans main.js :\n{ancien}")
+        texte = texte.replace(ancien, nouveau)
+    main.write_text(texte, encoding="utf-8")
+    print("main.js : lancement automatique à l'ouverture de session (une fois)")
+
+# 11. Liens « tel: » (src/app/itechLiensTel.ts, copié par construire.sh) : processus principal + preload
+main = racine / "src/main.js"
+texte = main.read_text(encoding="utf-8")
+if "transmettreNumero" not in texte:
+    for ancien, nouveau in (
+        ("const { activerDemarrageAutomatique } = require('./app/itechDemarrage.ts') // ajout iTech\n",
+         "const { activerDemarrageAutomatique } = require('./app/itechDemarrage.ts') // ajout iTech\n"
+         "const { preparerLiensTel, transmettreNumero } = require('./app/itechLiensTel.ts') // ajout iTech\n"),
+        ("\tactiverDemarrageAutomatique() // ajout iTech : démarrage avec Windows (une seule fois)\n",
+         "\tactiverDemarrageAutomatique() // ajout iTech : démarrage avec Windows (une seule fois)\n"
+         "\tpreparerLiensTel() // ajout iTech : liens tel: et callto:\n"),
+        ("\tapp.on('second-instance', (event, argv, cwd) => {\n\t\tif (isSameExecution(argv[0], cwd)) {\n",
+         "\tapp.on('second-instance', (event, argv, cwd) => {\n"
+         "\t\t// ajout iTech : lien tel: reçu (traité avant la vérification d'installation)\n"
+         "\t\tif (transmettreNumero(argv, mainWindow)) {\n\t\t\tfocusMainWindow()\n\t\t\treturn\n\t\t}\n"
+         "\t\tif (isSameExecution(argv[0], cwd)) {\n"),
+    ):
+        if texte.count(ancien) != 1:
+            sys.exit(f"ÉCHEC : repère introuvable ou ambigu dans main.js :\n{ancien}")
+        texte = texte.replace(ancien, nouveau)
+    main.write_text(texte, encoding="utf-8")
+    print("main.js : liens tel: branchés")
+preload = racine / "src/preload.js"
+texte = preload.read_text(encoding="utf-8")
+if "onItechTel" not in texte:
+    ancien = "\tfocusTalk: () => ipcRenderer.invoke('talk:focus'),\n"
+    nouveau = (ancien +
+        "\t// ajout iTech : liens tel: (numéro reçu de Windows)\n"
+        "\tonItechTel: (rappel) => ipcRenderer.on('itech:tel', (event, numero) => rappel(numero)),\n"
+        "\titechTelEnAttente: () => ipcRenderer.invoke('itech:tel:enAttente'),\n")
+    if texte.count(ancien) != 1:
+        sys.exit("ÉCHEC : focusTalk introuvable ou ambigu dans preload.js")
+    preload.write_text(texte.replace(ancien, nouveau), encoding="utf-8")
+    print("preload.js : liens tel: transmis à la fenêtre")

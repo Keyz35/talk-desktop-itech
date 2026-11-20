@@ -6,6 +6,7 @@
  *
  * window.Telephone3CX.monter({ conteneur, api, reunion })
  *   reunion() -> Promise<{ ok, lien_organisateur?, lien_invites?, message? }> (appli « Réunions », Jitsi)
+ *   ocs(methode, chemin, donnees) -> Promise<données OCS> (API Nextcloud, ex. statut utilisateur)
  *   conteneur : élément où placer le bouton (sinon bouton flottant en bas à droite)
  *   api(methode, action, donnees) -> Promise<{ ok, message?, statut?, ... }>
  *     actions : 'sip' | 'etat' | 'appel' | 'recents' | 'recherche'
@@ -123,7 +124,7 @@
 
 	// ------------------------------------------------------------------ montage
 
-	function monter({ conteneur, api, reunion }) {
+	function monter({ conteneur, api, reunion, ocs }) {
 		const etat = {
 			ouvert: false, libelle: '', minuteRecherche: null, enCours: false,
 			mode: 'rappel', identifiants: null, ua: null, enregistre: false,
@@ -391,6 +392,8 @@
 			etat.mode = 'telephone'
 			etat.identifiants = id
 			majAlerteManques()
+			chargerIndexNoms(true)  // noms des appelants (carnet + collègues), puis rafraîchi toutes les 30 min
+			setInterval(() => chargerIndexNoms(false), 5 * 60 * 1000)
 			const socket = new JsSIP.WebSocketInterface(id.wss)
 			const ua = new JsSIP.UA({
 				sockets: [socket],
@@ -439,6 +442,32 @@
 			window.addEventListener('beforeunload', () => { try { ua.stop() } catch (err) { /* sans effet */ } })
 		}
 
+		// Statut Nextcloud « 📞 En communication » pendant un appel, puis restauration du statut précédent.
+		// Effacé de lui-même au bout de 4 h si l'application se fermait en plein appel.
+		async function signalerEnCommunication(actif) {
+			if (typeof ocs !== 'function') return
+			const base = 'apps/user_status/api/v1/user_status'
+			try {
+				if (actif) {
+					const avant = await ocs('GET', base).catch(() => null)
+					etat.statutAvant = avant && avant.message !== 'En communication' ? avant : (etat.statutAvant || null)
+					await ocs('PUT', base + '/message/custom', {
+						statusIcon: '📞', message: 'En communication', clearAt: Math.floor(Date.now() / 1000) + 4 * 3600,
+					})
+				} else {
+					const a = etat.statutAvant
+					etat.statutAvant = null
+					if (a && a.messageId && a.messageIsPredefined) {
+						await ocs('PUT', base + '/message/predefined', { messageId: a.messageId, clearAt: a.clearAt || null })
+					} else if (a && a.message) {
+						await ocs('PUT', base + '/message/custom', { statusIcon: a.icon || '', message: a.message, clearAt: a.clearAt || null })
+					} else {
+						await ocs('DELETE', base + '/message')
+					}
+				}
+			} catch (e) { /* statut non modifiable : sans conséquence pour l'appel */ }
+		}
+
 		function optionsMedia() {
 			const stun = (etat.identifiants && etat.identifiants.stun) || STUN_PAR_DEFAUT
 			return {
@@ -477,6 +506,7 @@
 					pc.getReceivers().forEach((r) => r.track && flux.addTrack(r.track))
 					audioDistant.srcObject = flux
 				}
+				signalerEnCommunication(true)
 				clearInterval(etat.minuteDuree)
 				etat.minuteDuree = setInterval(() => {
 					$('.tel3cx-appel-duree').textContent = formatDuree(Math.round((Date.now() - etat.debutAppel) / 1000))
@@ -489,6 +519,7 @@
 			const fin = (raison) => (d) => {
 				const etaitEtabli = !!etat.debutAppel
 				const sens = etat.sens
+				if (etaitEtabli) signalerEnCommunication(false)
 				sonnerie.arreter()
 				clearInterval(etat.minuteDuree)
 				// Appel décroché ailleurs (autre appareil du même poste, collègue d'un groupe d'appel) : le standard
@@ -530,7 +561,8 @@
 		function appelerParSip() {
 			const numero = numeroAComposer(champ.value)
 			if (!numero) return
-			const libelle = etat.libelle || lisible(numero)
+			const connu = nomPourNumero(numero)
+			const libelle = etat.libelle || (connu ? `${connu} (${lisible(numero)})` : lisible(numero))
 			etat.sens = 'sortant'
 			etat.correspondant = libelle
 			etat.numeroCorrespondant = numero
@@ -569,7 +601,8 @@
 			}
 			const id = session.remote_identity
 			const numero = (id && id.uri && id.uri.user) || 'inconnu'
-			const nom = id && id.display_name && id.display_name !== numero ? id.display_name : ''
+			const nomStandard = id && id.display_name && id.display_name !== numero ? id.display_name : ''
+			const nom = nomPourNumero(numero) || nomStandard
 			etat.sens = 'entrant'
 			etat.correspondant = nom ? `${nom} (${lisible(numero)})` : lisible(numero)
 			etat.numeroCorrespondant = numero
@@ -901,7 +934,38 @@
 			etat.annuaireDisponible = !!(annuaire.ok && annuaire.disponible)
 			etat.contacts = etat.annuaireDisponible ? (annuaire.contacts || []) : []
 			etat.mesContacts = carnet.ok ? [...(carnet.contacts || []), ...(carnet.partages || [])] : []
-			afficherContacts()
+			construireIndex()
+			if (etat.tableau) afficherContacts()
+		}
+
+		// Nom de l'appelant / de l'appelé : carnet du collaborateur (Outlook/mailcow) et collègues (postes).
+		// Clé = 9 derniers chiffres (06…, +33 6…, 0033 6… désignent le même numéro) ; poste = numéro complet.
+		const indexNoms = new Map()
+		let dateIndex = 0
+		function cleNumero(numero) {
+			const chiffres = String(numero || '').replace(/\D/g, '')
+			return chiffres.length > 6 ? chiffres.slice(-9) : chiffres
+		}
+		function construireIndex() {
+			indexNoms.clear()
+			for (const c of etat.mesContacts || []) {
+				const libelle = c.societe && c.societe !== c.nom ? `${c.nom} (${c.societe})` : c.nom
+				for (const n of c.numeros || []) {
+					const cle = cleNumero(n.numero)
+					if (cle && !indexNoms.has(cle)) indexNoms.set(cle, libelle)
+				}
+			}
+			for (const c of etat.contacts || []) {
+				if (c.poste) indexNoms.set(cleNumero(c.poste), c.nom)  // les collègues priment
+			}
+		}
+		function nomPourNumero(numero) {
+			return indexNoms.get(cleNumero(numero)) || null
+		}
+		async function chargerIndexNoms(forcer) {
+			if (!forcer && Date.now() - dateIndex < 30 * 60 * 1000) return
+			dateIndex = Date.now()
+			await chargerContacts()
 		}
 
 		function formatDureeCourte(s) {
@@ -1216,6 +1280,19 @@
 		}
 
 		// ---------------------------------------------------------- démarrage
+
+		// Liens « tel: » (Talk Desktop) : le numéro est prérempli, l'utilisateur confirme (pas d'appel accidentel).
+		function ouvrirAvecNumero(numero) {
+			const chiffres = numeroAComposer(numero)
+			const connu = nomPourNumero(chiffres)
+			ouvrir()
+			if (!etat.session) remplir(chiffres, connu ? `${connu} (${lisible(chiffres)})` : '')
+			boutonAppeler.focus()
+		}
+		if (window.TALK_DESKTOP && typeof window.TALK_DESKTOP.onItechTel === 'function') {
+			window.TALK_DESKTOP.onItechTel((numero) => ouvrirAvecNumero(numero))
+			window.TALK_DESKTOP.itechTelEnAttente().then((numero) => { if (numero) setTimeout(() => ouvrirAvecNumero(numero), 1500) })
+		}
 
 		;(async () => {
 			const r = await api('GET', 'sip')

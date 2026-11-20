@@ -17,7 +17,7 @@ type Reponse = { ok: boolean, statut?: number, message?: string, [cle: string]: 
 
 declare global {
 	interface Window {
-		Telephone3CX: { monter(options: { conteneur: HTMLElement | null, api: typeof api, reunion: typeof reunion }): unknown }
+		Telephone3CX: { monter(options: { conteneur: HTMLElement | null, api: typeof api, reunion: typeof reunion, ocs: typeof ocs }): unknown }
 	}
 }
 
@@ -66,6 +66,17 @@ async function reunion(): Promise<Reponse> {
 	}
 }
 
+// Accès générique aux API OCS de Nextcloud (statut utilisateur…) ; renvoie ocs.data, ou lève une erreur.
+async function ocs(methode: 'GET' | 'PUT' | 'POST' | 'DELETE', chemin: string, donnees?: Record<string, unknown>) {
+	const reponse = await axios.request({
+		method: methode,
+		url: generateOcsUrl(chemin),
+		params: { format: 'json' },
+		data: donnees,
+	})
+	return reponse.data?.ocs?.data
+}
+
 export function monterTelephone(conteneur: HTMLElement | null) {
-	window.Telephone3CX.monter({ conteneur, api, reunion })
+	window.Telephone3CX.monter({ conteneur, api, reunion, ocs })
 }
