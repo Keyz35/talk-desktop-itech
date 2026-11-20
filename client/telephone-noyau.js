@@ -491,7 +491,11 @@
 				const sens = etat.sens
 				sonnerie.arreter()
 				clearInterval(etat.minuteDuree)
-				if (sens === 'entrant' && !etaitEtabli) {
+				// Appel décroché ailleurs (autre appareil du même poste, collègue d'un groupe d'appel) : le standard
+				// annule la sonnerie ici avec « Reason: SIP;cause=200 » (« Call completed elsewhere ») ou « Q.850;cause=26 ».
+				const raisonAnnulation = (d && d.message && typeof d.message.getHeader === 'function' && d.message.getHeader('Reason')) || ''
+				const prisAilleurs = sens === 'entrant' && !etaitEtabli && /SIP\s*;\s*cause\s*=\s*200\b|Q\.850\s*;\s*cause\s*=\s*26\b|completed elsewhere|NON_SELECTED_USER_CLEARING/i.test(raisonAnnulation)
+				if (sens === 'entrant' && !etaitEtabli && !prisAilleurs) {
 					noterRecent(etat.numeroCorrespondant, etat.correspondant, 'manque')
 					// Refus volontaire (bouton Refuser) : pas d'alerte ; sinon appel manqué signalé sur le bouton du pavé.
 					if (!etat.refusVolontaire && !etat.tableau) changerManques(lireManques() + 1)

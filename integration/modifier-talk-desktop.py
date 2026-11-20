@@ -113,3 +113,22 @@ for ancien, nouveau in (
     texte = texte.replace(ancien, nouveau)
 tray.write_text(texte, encoding="utf-8")
 print("app.tray.js : menu de la zone de notification en français")
+
+# 8. Clic sur une notification (appel ou message) : la fenêtre doit vraiment passer au premier plan.
+#    focusMainWindow() ne faisait que show() ; sous Windows, la protection du premier plan empêche alors
+#    une fenêtre ouverte mais recouverte de remonter. On force : afficher, « toujours devant » un instant,
+#    focus, puis retour à la normale.
+main = racine / "src/main.js"
+texte = main.read_text(encoding="utf-8")
+if "ajout iTech : premier plan" not in texte:
+    ancien = "\t\t// Show the window in case it is hidden in the system tray and focus it\n\t\tmainWindow.show()\n"
+    nouveau = (ancien +
+        "\t\t// ajout iTech : premier plan (Windows bloque sinon la remontée d'une fenêtre recouverte)\n"
+        "\t\tmainWindow.setAlwaysOnTop(true)\n"
+        "\t\tmainWindow.focus()\n"
+        "\t\tmainWindow.moveTop()\n"
+        "\t\tsetTimeout(() => { if (!mainWindow.isDestroyed()) mainWindow.setAlwaysOnTop(false) }, 300)\n")
+    if texte.count(ancien) != 1:
+        sys.exit("ÉCHEC : focusMainWindow introuvable ou ambigu dans main.js")
+    main.write_text(texte.replace(ancien, nouveau), encoding="utf-8")
+    print("main.js : retour au premier plan forcé au clic sur une notification")
